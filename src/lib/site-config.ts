@@ -29,6 +29,6 @@ export const CREDIBILITY_STATS = {
 // (variável de ambiente META_CAPI_TOKEN), lido só no servidor. Ver src/lib/meta-capi.ts.
 export const META_PIXEL_ID = "1009645534315662";
 
-export const SITE_NAME = "Luciana Pandolfi | Planos de Saúde";
+export const SITE_NAME = "L&J Consultoria | Planos de Saúde";
 export const SITE_DESCRIPTION =
   "Consultoria gratuita e independente em planos de saúde em São Paulo. Comparação de mercado, acesso a hospitais de referência e simulação sem custo.";

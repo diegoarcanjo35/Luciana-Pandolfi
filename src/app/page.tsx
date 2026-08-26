@@ -207,35 +207,36 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Bloco 9 — Quem somos. O site é da L&J (Luciana + Jhonatan), não só da Luciana. */}
+        {/* Bloco 9 — Quem somos (versão resumida; texto completo em /quem-somos). */}
         <section className="bg-white px-4 py-16 sm:px-6">
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-            <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-gold shadow-md">
+          <div className="mx-auto grid max-w-3xl gap-8 sm:grid-cols-[14rem_1fr] sm:items-center">
+            <div className="relative mx-auto aspect-[4/5] w-48 overflow-hidden rounded-2xl border-2 border-gold shadow-md sm:w-full">
               <Image
                 src="/team/luciana-e-jhonatan.jpg"
                 alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
                 fill
-                sizes="8rem"
+                sizes="14rem"
                 className="object-cover"
               />
             </div>
-            <h2 className="font-serif-display text-xl font-semibold text-navy">
-              Luciana Pandolfi &amp; Jhonatan
-            </h2>
-            <p className="text-sm font-medium text-navy/70">L&amp;J Consultoria — Planos de Saúde Nacional</p>
-            <ul className="flex flex-col gap-1.5 text-sm text-navy/60">
-              <li>💲 Redução de custos para empresas e famílias</li>
-              <li>🏥 Hospitais de referência</li>
-              <li>🤝 Atendimento personalizado</li>
-            </ul>
-            <a
-              href="https://www.instagram.com/lucianapandolfi.consultora/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-semibold text-gold-dark hover:underline"
-            >
-              @lucianapandolfi.consultora no Instagram
-            </a>
+            <div className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+              <h2 className="font-serif-display text-xl font-semibold text-navy">
+                Luciana Pandolfi &amp; Jhonatan
+              </h2>
+              <p className="text-sm font-medium text-navy/70">
+                L&amp;J Consultoria — Planos de Saúde Nacional
+              </p>
+              <p className="text-sm leading-relaxed text-navy/60">
+                Acesso direto às principais operadoras e à rede de hospitais de referência de São
+                Paulo — o diferencial que guia cada recomendação que fazemos.
+              </p>
+              <Link
+                href="/quem-somos"
+                className="text-sm font-semibold text-gold-dark hover:underline"
+              >
+                Conheça a L&amp;J →
+              </Link>
+            </div>
           </div>
         </section>
 

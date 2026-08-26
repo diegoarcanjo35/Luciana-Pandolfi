@@ -12,12 +12,20 @@ export default function Header({ ctaHref = "#simulacao" }: { ctaHref?: string })
             L&J
           </span>
           <span className="font-serif-display text-lg font-semibold text-navy sm:text-xl">
-            Luciana Pandolfi
+            L&amp;J Consultoria
             <span className="ml-2 hidden text-sm font-normal text-navy/50 sm:inline">
               Planos de Saúde
             </span>
           </span>
         </Link>
+        <nav className="hidden items-center gap-6 md:flex">
+          <Link href="/" className="text-sm font-medium text-navy/70 hover:text-navy">
+            Início
+          </Link>
+          <Link href="/quem-somos" className="text-sm font-medium text-navy/70 hover:text-navy">
+            Quem somos
+          </Link>
+        </nav>
         <a
           href={ctaHref}
           className="rounded-full bg-gold px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold-light"

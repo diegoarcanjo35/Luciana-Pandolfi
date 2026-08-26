@@ -10,7 +10,8 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
         >
           L&J
         </span>
-        <p className="font-serif-display text-base text-cream">Luciana Pandolfi | Planos de Saúde</p>
+        <p className="font-serif-display text-base text-cream">L&amp;J Consultoria | Planos de Saúde</p>
+        <p className="text-xs text-cream/50">Luciana Pandolfi &amp; Jhonatan</p>
         <p>
           Consultoria gratuita e independente em planos de saúde · São Paulo/SP e todo o Brasil
         </p>
@@ -18,6 +19,9 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
           L&amp;J Consultoria e Negócios Ltda · Registro profissional (SUSEP): a confirmar com a cliente
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <Link href="/quem-somos" className="underline decoration-gold/40 hover:text-cream">
+            Quem somos
+          </Link>
           <Link href="/politica-de-privacidade" className="underline decoration-gold/40 hover:text-cream">
             Política de Privacidade
           </Link>
@@ -28,7 +32,7 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
           )}
         </div>
         <p className="text-xs text-cream/40">
-          © {new Date().getFullYear()} Luciana Pandolfi | Planos de Saúde. Todos os direitos reservados.
+          © {new Date().getFullYear()} L&amp;J Consultoria | Planos de Saúde. Todos os direitos reservados.
         </p>
       </div>
     </footer>
