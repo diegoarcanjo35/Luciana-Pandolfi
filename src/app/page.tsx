@@ -210,14 +210,20 @@ export default function HomePage() {
         {/* Bloco 9 — Quem somos (versão resumida; texto completo em /quem-somos). */}
         <section className="bg-white px-4 py-16 sm:px-6">
           <div className="mx-auto grid max-w-3xl gap-8 sm:grid-cols-[14rem_1fr] sm:items-center">
-            <div className="relative mx-auto aspect-[4/5] w-48 overflow-hidden rounded-2xl border-2 border-gold shadow-md sm:w-full">
+            <div className="relative mx-auto aspect-[4/5] w-48 overflow-hidden rounded-t-[9999px] rounded-b-2xl shadow-md sm:w-full">
               <Image
                 src="/team/luciana-e-jhonatan.jpg"
                 alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
                 fill
                 sizes="14rem"
-                className="object-cover"
+                className="object-cover object-top"
               />
+              <div
+                aria-hidden
+                className="absolute left-1/2 top-3 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border-2 border-gold bg-navy/90 font-serif-display text-xs text-gold-light shadow"
+              >
+                L&J
+              </div>
             </div>
             <div className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
               <h2 className="font-serif-display text-xl font-semibold text-navy">
