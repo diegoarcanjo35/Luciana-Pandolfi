@@ -117,13 +117,35 @@ Para não afirmar cobertura que não existe:
 | Pixel / API de Conversões / deduplicação | **Não testado nesta rodada** — nenhuma verificação no Gerenciador de Eventos da Meta foi feita. Os formulários apenas tiveram a posição alterada; o componente e sua lógica de disparo não foram tocados, então o comportamento esperado é o mesmo já documentado na seção "Pixel da Meta / API de Conversões" — mas isso é inferência de código, não um teste executado. |
 | Segredos / `.dev.vars` | Conferido que `.dev.vars`, `cloudflare-env.d.ts` (gerado) e nenhum token/segredo novo foram adicionados ao commit desta rodada. |
 
-### Pendências que dependem do cliente (rodada 2)
+### Atualizações do cliente, recebidas após a rodada 2
 
-- Validação jurídica formal da Política de Privacidade revisada.
-- Confirmação de fonte para as alegações de confiança mantidas ("Resposta em até 2 horas úteis", "Acesso
-  direto às principais operadoras", etc.) — ver seção de pendências de conteúdo acima.
-- Mesmas pendências já listadas na rodada 1 (números de credibilidade, prova social, WhatsApp
-  definitivo, domínio) continuam abertas.
+- **SLA de resposta**: cliente confirmou 1 hora útil (não 2) — corrigido em `plano-familiar`,
+  `plano-empresarial` e `/obrigado`.
+- **Validação jurídica**: cliente confirmou que está OK. O aviso na Política de Privacidade dizendo que
+  "ainda não passou por validação jurídica formal" **foi mantido por precaução** — não há neste
+  repositório nenhum documento ou registro da validação em si, só a confirmação verbal do cliente nesta
+  conversa. Se a validação já foi feita por um advogado, é seguro remover o aviso; até lá, ele fica.
+- **6 anos de mercado**: adicionado à `CredibilityBar`.
+- **Número de famílias/empresas atendidas**: cliente confirmou que ainda está pendente — segue de fora
+  da `CredibilityBar` (nenhum placeholder "pendente" foi escrito no site, como pedido).
+- **WhatsApp**: `(11) 95609-8194` confirmado como definitivo pelo cliente.
+- **Modalidades de produto**: cliente informou que a consultoria trabalha com Individual/Familiar,
+  Adesão (via associação/sindicato) e PME (empresarial). Adicionado um item de FAQ explicando as três
+  modalidades (`FAQAccordion.tsx`) e uma menção ao plano de adesão como terceira via na página
+  `/plano-empresarial` (que antes só comparava pessoa física vs. CNPJ).
+- **Depoimentos reais**: encontrados no perfil público do Google (L&J Seguros, mesmo telefone do
+  cliente), 5,0★/15 avaliações. Dois depoimentos verificados foram usados para reativar a seção de prova
+  social na Home (`src/components/SocialProof.tsx`, substituindo o antigo `SocialProofPending.tsx`) —
+  nomes completos, sem exposição de condição de saúde. Restam mais avaliações no perfil não usadas ainda;
+  se quiser mais variedade, dá pra buscar depoimentos adicionais.
+
+### Pendências que ainda dependem do cliente
+
+- Confirmação de fonte para as alegações de confiança mantidas ("Acesso direto às principais
+  operadoras", "Todas as principais operadoras", "Atendimento em todo o Brasil", "Rede de hospitais de
+  referência").
+- Número de famílias/empresas atendidas (para a `CredibilityBar`).
+- WhatsApp automático, domínio próprio — mesmas pendências já listadas na rodada 1.
 
 ## Rodando localmente
 

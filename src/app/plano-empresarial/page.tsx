@@ -81,7 +81,7 @@ export default function PlanoEmpresarialPage() {
                 Quero minha análise empresarial
               </a>
               <p className="text-xs text-cream/45">
-                Resposta em até 2 horas úteis · Atendimento em São Paulo e em todo o Brasil · Sem
+                Resposta em até 1 hora útil · Atendimento em São Paulo e em todo o Brasil · Sem
                 custo e sem compromisso
               </p>
             </div>
@@ -155,13 +155,18 @@ export default function PlanoEmpresarialPage() {
                 </p>
               </div>
               <div className="rounded-sm border-2 border-alice bg-white p-6 shadow-sm">
-                <p className="font-semibold text-navy">Plano empresarial (CNPJ)</p>
+                <p className="font-semibold text-navy">Plano empresarial (CNPJ / PME)</p>
                 <p className="mt-2 text-sm leading-relaxed text-navy/60">
                   Tabela negociada para pessoa jurídica, sujeita a regras próprias. A elegibilidade
                   e a condição exata dependem do número de vidas e do perfil do grupo.
                 </p>
               </div>
             </div>
+            <p className="mt-6 text-sm leading-relaxed text-navy/50">
+              Também existe uma terceira via — o plano de adesão, contratado através de uma
+              associação ou sindicato, sem precisar de CNPJ. Se esse for o seu caso, a análise
+              inclui essa opção na comparação.
+            </p>
           </div>
         </section>
 

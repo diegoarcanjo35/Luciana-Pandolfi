@@ -1,8 +1,9 @@
 // Barra de credibilidade — bloco 2 da Home no briefing.
-// "+X anos de mercado" e "+X famílias e empresas atendidas" ficam FORA por enquanto:
-// são números que a cliente ainda não passou, e o briefing proíbe inventar estatística.
-// Assim que ela confirmar os valores, adicionar como novos itens no array abaixo.
+// "+X famílias e empresas atendidas" fica FORA por enquanto: é um número que a
+// cliente ainda não confirmou, e o briefing proíbe inventar estatística. Assim que
+// ela confirmar o valor, adicionar como novo item no array abaixo.
 const ITEMS = [
+  "6 anos de mercado",
   "Todas as principais operadoras do mercado analisadas",
   "Consultoria sem custo para o cliente",
 ];

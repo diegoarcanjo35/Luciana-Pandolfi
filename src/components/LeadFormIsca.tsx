@@ -115,7 +115,7 @@ export default function LeadFormIsca({
         {loading ? "Enviando..." : "Receber o guia gratuito"}
       </button>
       <p className="text-center text-xs text-navy/40">
-        Envio imediato · Sem custo · Seus dados não são compartilhados com terceiros
+        Sem custo · Seus dados não são compartilhados com terceiros
       </p>
     </form>
   );

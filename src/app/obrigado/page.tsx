@@ -35,7 +35,7 @@ export default async function ObrigadoPage({
             Recebemos seus dados. Obrigada!
           </h1>
           <p className="mt-4 text-base leading-relaxed text-navy/65">
-            Sua análise está a caminho — a Luciana retorna em até <strong>2 horas úteis</strong> (para
+            Sua análise está a caminho — a Luciana retorna em até <strong>1 hora útil</strong> (para
             quem pediu a simulação) ou em até <strong>24 horas úteis</strong> (para análises
             comparativas completas).
           </p>

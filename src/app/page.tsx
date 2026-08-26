@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CredibilityBar from "@/components/CredibilityBar";
+import SocialProof from "@/components/SocialProof";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
 import LeadFormQualificacao from "@/components/LeadFormQualificacao";
@@ -209,12 +210,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/*
-          Prova social (depoimentos reais) fica fora do ar por enquanto — a cliente foi
-          acionada, mas nada de "em breve"/placeholder público (decisão de direção premium,
-          26/08/2026). O componente SocialProofPending.tsx segue pronto em
-          src/components/ — reativar aqui, no mesmo lugar, assim que houver depoimento real.
-        */}
+        <SocialProof />
 
         {/* Isca de captura */}
         <section id="guia" className="bg-navy px-4 py-16 text-cream sm:px-6">

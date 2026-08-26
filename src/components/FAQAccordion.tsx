@@ -12,6 +12,10 @@ const FAQ_ITEMS = [
     a: "Sim — atendimento em todo o Brasil, com especialização na rede hospitalar de São Paulo.",
   },
   {
+    q: "Quais modalidades de plano vocês analisam?",
+    a: "Individual/familiar, adesão (via associação ou sindicato) e PME (empresarial, para pequenas e médias empresas). Cada modalidade tem regras e condições próprias — a análise indica qual se encaixa no seu perfil.",
+  },
+  {
     q: "Consigo manter meus médicos e hospitais?",
     a: "Depende da rede credenciada de cada opção. Isso é exatamente o que a análise verifica antes de qualquer recomendação.",
   },
