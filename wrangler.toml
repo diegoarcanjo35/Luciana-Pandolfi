@@ -1,4 +1,4 @@
-name = "luciana-pandolfi-site"
+name = "luciana-pandolfi"
 main = ".open-next/worker.js"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]

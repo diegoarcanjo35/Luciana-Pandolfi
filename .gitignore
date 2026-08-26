@@ -40,7 +40,8 @@ yarn-error.log*
 .open-next/
 .wrangler/
 .dev.vars
-cloudflare-env.d.ts
+# cloudflare-env.d.ts is committed on purpose — Cloudflare's CI build (Workers Builds)
+# needs it present since it only declares types, no secret values.
 
 # typescript
 *.tsbuildinfo
