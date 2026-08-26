@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CredibilityBar from "@/components/CredibilityBar";
+import OperatorsList from "@/components/OperatorsList";
 import SocialProof from "@/components/SocialProof";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
@@ -91,6 +92,7 @@ export default function HomePage() {
 
         {/* Faixa de confiança — só o que é verificável. */}
         <CredibilityBar />
+        <OperatorsList />
 
         {/* O problema */}
         <section className="px-4 py-16 sm:px-6">

@@ -121,31 +121,46 @@ Para não afirmar cobertura que não existe:
 
 - **SLA de resposta**: cliente confirmou 1 hora útil (não 2) — corrigido em `plano-familiar`,
   `plano-empresarial` e `/obrigado`.
-- **Validação jurídica**: cliente confirmou que está OK. O aviso na Política de Privacidade dizendo que
-  "ainda não passou por validação jurídica formal" **foi mantido por precaução** — não há neste
-  repositório nenhum documento ou registro da validação em si, só a confirmação verbal do cliente nesta
-  conversa. Se a validação já foi feita por um advogado, é seguro remover o aviso; até lá, ele fica.
+- **Validação jurídica**: cliente confirmou que está OK, sem necessidade de documento. O aviso na
+  Política de Privacidade dizendo que "ainda não passou por validação jurídica formal" foi **removido**
+  a pedido do cliente.
 - **6 anos de mercado**: adicionado à `CredibilityBar`.
 - **Número de famílias/empresas atendidas**: cliente confirmou que ainda está pendente — segue de fora
   da `CredibilityBar` (nenhum placeholder "pendente" foi escrito no site, como pedido).
-- **WhatsApp**: `(11) 95609-8194` confirmado como definitivo pelo cliente.
+- **Operadoras**: cliente passou a lista real de 17 operadoras analisadas (Alice, Amil, Bradesco, Care
+  Plus, Hapvida, MedSênior, Omint, Porto Seguro, São Camilo, Proasa, Sami, São Cristóvão, Bluemed,
+  SulAmérica, Seguros Unimed, Trasmontano, Unimed Guarulhos) — agora exibida na Home logo abaixo da
+  `CredibilityBar` (`src/components/OperatorsList.tsx`), substanciando as alegações "todas as principais
+  operadoras" e "acesso direto às principais operadoras".
+- **Registro profissional**: cliente confirmou que não tem registro formal ainda — trabalham
+  credenciados pelas operadoras. Nada foi adicionado ao rodapé sobre isso, como pedido; a linha segue
+  removida (item já resolvido, não é mais pendência).
+- **WhatsApp**: `(11) 95609-8194` reconfirmado como definitivo.
 - **Modalidades de produto**: cliente informou que a consultoria trabalha com Individual/Familiar,
   Adesão (via associação/sindicato) e PME (empresarial). Adicionado um item de FAQ explicando as três
   modalidades (`FAQAccordion.tsx`) e uma menção ao plano de adesão como terceira via na página
   `/plano-empresarial` (que antes só comparava pessoa física vs. CNPJ).
 - **Depoimentos reais**: encontrados no perfil público do Google (L&J Seguros, mesmo telefone do
-  cliente), 5,0★/15 avaliações. Dois depoimentos verificados foram usados para reativar a seção de prova
-  social na Home (`src/components/SocialProof.tsx`, substituindo o antigo `SocialProofPending.tsx`) —
-  nomes completos, sem exposição de condição de saúde. Restam mais avaliações no perfil não usadas ainda;
-  se quiser mais variedade, dá pra buscar depoimentos adicionais.
+  cliente), 5,0★/15 avaliações. Quatro depoimentos verificados (nomes completos, sem exposição de
+  condição de saúde) estão na seção de prova social da Home (`src/components/SocialProof.tsx`,
+  substituindo o antigo `SocialProofPending.tsx`). O perfil tem mais avaliações não usadas ainda, se
+  quiser trocar ou variar depois.
 
 ### Pendências que ainda dependem do cliente
 
-- Confirmação de fonte para as alegações de confiança mantidas ("Acesso direto às principais
-  operadoras", "Todas as principais operadoras", "Atendimento em todo o Brasil", "Rede de hospitais de
-  referência").
+- Confirmação de fonte para "Atendimento em todo o Brasil" e "Rede de hospitais de referência" (as
+  alegações sobre operadoras já foram resolvidas com a lista real).
 - Número de famílias/empresas atendidas (para a `CredibilityBar`).
-- WhatsApp automático, domínio próprio — mesmas pendências já listadas na rodada 1.
+- Domínio próprio — mesma pendência já listada na rodada 1.
+
+### Sobre produção
+
+**Nada desta rodada (nem da rodada 1) está em produção.** Todo o trabalho está só na branch
+`premium-redesign`, commitada e enviada para `origin/premium-redesign` no GitHub — nunca mesclada na
+`main` nem publicada no Worker do Cloudflare. O Worker publicado (ligado à `main` via Cloudflare Workers
+Builds) ainda está rodando a versão anterior a toda essa reformulação. Para publicar, é preciso abrir um
+Pull Request de `premium-redesign` para `main` e mesclar — passo que depende de aprovação visual
+explícita do cliente, por instrução do próprio cliente nesta rodada.
 
 ## Rodando localmente
 

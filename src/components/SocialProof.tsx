@@ -12,6 +12,16 @@ const TESTIMONIALS = [
       "A Luciana Pandolfi, agradeço pelo excelente atendimento e por toda a orientação prestada. Sua atenção e profissionalismo foram fundamentais para a melhor escolha do meu convênio.",
     author: "Andreia Ventura",
   },
+  {
+    quote:
+      "A Luciana é extremamente atenciosa, demonstra muito conhecimento e oferece orientações claras e personalizadas, sempre indicando o melhor plano de acordo com a necessidade. Atendimento excelente, humano e de total confiança.",
+    author: "Henrique Sousa dos Santos",
+  },
+  {
+    quote:
+      "Excelente atendimento, não fiquei com nenhuma dúvida, superou minhas expectativas o atendimento da Luciana!",
+    author: "Thaís Cristina Rodrigues Victória",
+  },
 ];
 
 export default function SocialProof() {

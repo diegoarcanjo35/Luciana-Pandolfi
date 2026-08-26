@@ -117,16 +117,6 @@ export default function PoliticaDePrivacidadePage() {
                 WhatsApp de atendimento disponível em todas as páginas do site.
               </p>
             </section>
-
-            <section className="rounded-sm border border-gold/40 bg-cream-dark/40 p-4">
-              <h2 className="font-semibold text-navy">Aviso</h2>
-              <p className="mt-2 text-navy/60">
-                Este texto foi redigido para descrever de forma transparente e verdadeira como os dados são
-                tratados neste site, mas ainda não passou por validação jurídica formal. Recomenda-se
-                revisão por um advogado especializado em proteção de dados antes da publicação definitiva
-                em produção.
-              </p>
-            </section>
           </div>
         </div>
       </main>
