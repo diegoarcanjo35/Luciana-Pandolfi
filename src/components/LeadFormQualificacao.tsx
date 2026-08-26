@@ -56,6 +56,7 @@ export default function LeadFormQualificacao({
 
     setLoading(true);
     const utm = getStoredUtm();
+    const eventId = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/lead", {
@@ -74,13 +75,14 @@ export default function LeadFormQualificacao({
           quando_resolver: quando,
           hospital_especifico: hospital || null,
           numero_vidas: showNumeroVidas ? numeroVidas : null,
+          event_id: eventId,
           ...utm,
         }),
       });
 
       if (!res.ok) throw new Error("Falha no envio");
 
-      const params = new URLSearchParams({ origem: "qualificacao" });
+      const params = new URLSearchParams({ origem: "qualificacao", eid: eventId });
       if (campaign) params.set("campanha", campaign);
       router.push(`/obrigado?${params.toString()}`);
     } catch {

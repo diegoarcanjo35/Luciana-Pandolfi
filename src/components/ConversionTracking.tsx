@@ -3,25 +3,25 @@
 import { useEffect } from "react";
 
 /**
- * Disparo do evento de conversão (Meta Pixel + API de Conversões, e Google Tag / GA4).
+ * Disparo do evento de conversão "Lead" no navegador (Meta Pixel), em
+ * `/obrigado`. Usa o mesmo `eventId` gerado no formulário e já enviado ao
+ * servidor (API de Conversões, em src/lib/meta-capi.ts) para deduplicação —
+ * a Meta soma os dois como um único evento quando o event_id bate.
  *
- * BYPASS ATIVO — por decisão do cliente, o Pixel e o GA4 ainda não foram conectados
- * (aguardando os IDs/tokens do Business Manager e do GA4). Esta função só loga no
- * console por enquanto. Antes de qualquer campanha subir (contrato exige isso), plugar:
- *
- * 1. Meta Pixel: adicionar o snippet do Pixel no <head> (ver next/script em layout.tsx)
- *    com o Pixel ID real, e chamar fbq('track', 'Lead', { campaign }) aqui.
- * 2. API de Conversões: enviar o mesmo evento Lead server-side (ideal: dentro de
- *    /api/lead/route.ts, usando o Pixel ID + Access Token via variável de ambiente).
- * 3. GA4: adicionar o gtag.js com o Measurement ID real e chamar
- *    gtag('event', 'generate_lead', { campaign }) aqui.
- * 4. Validar no "Testar Eventos" do Meta Events Manager antes do go-live.
+ * GA4 fica de fora por decisão do cliente (fase 2, ver README.md) — não é
+ * bloqueante para o go-live de 01/09.
  */
-export default function ConversionTracking({ campaign }: { campaign?: string | null }) {
+export default function ConversionTracking({
+  campaign,
+  eventId,
+}: {
+  campaign?: string | null;
+  eventId?: string | null;
+}) {
   useEffect(() => {
-    console.log("[conversion-tracking:bypass] Lead event", { campaign: campaign ?? "não informada" });
-    // TODO: substituir pelo disparo real assim que Pixel/GA4 estiverem configurados.
-  }, [campaign]);
+    if (!eventId) return;
+    window.fbq?.("track", "Lead", campaign ? { campaign } : {}, { eventID: eventId });
+  }, [campaign, eventId]);
 
   return null;
 }

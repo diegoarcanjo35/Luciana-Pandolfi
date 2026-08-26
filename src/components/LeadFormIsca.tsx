@@ -30,6 +30,7 @@ export default function LeadFormIsca({
 
     setLoading(true);
     const utm = getStoredUtm();
+    const eventId = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/lead", {
@@ -42,13 +43,14 @@ export default function LeadFormIsca({
           nome,
           whatsapp,
           email,
+          event_id: eventId,
           ...utm,
         }),
       });
 
       if (!res.ok) throw new Error("Falha no envio");
 
-      const params = new URLSearchParams({ origem: "guia" });
+      const params = new URLSearchParams({ origem: "guia", eid: eventId });
       if (campaign) params.set("campanha", campaign);
       router.push(`/obrigado?${params.toString()}`);
     } catch {

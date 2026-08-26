@@ -79,13 +79,43 @@ locais indicados.
 - **Domínio**: o site está sendo construído sem domínio definido (é responsabilidade da cliente
   registrar, à parte). Nenhuma referência de domínio fixo está hardcoded no código.
 
-## Pixel da Meta / API de Conversões / GA4 — BYPASS ATIVO
+## Pixel da Meta / API de Conversões
 
-Por decisão explícita durante o desenvolvimento, o disparo de eventos de conversão está mockado (só
-loga no console) em `src/components/ConversionTracking.tsx`, usado em `/obrigado`. **Isso é bloqueante
-para a campanha** — o contrato exige Pixel + API de Conversões + GA4 testados e validados no "Testar
-Eventos" da Meta antes de qualquer campanha subir (01/09/2026). Ver instruções passo a passo dentro do
-próprio arquivo `ConversionTracking.tsx`.
+Conectado (Pixel ID `1009645534315662`, do arquivo `CONFIDENCIAL-Acessos-Pixel-API-Luciana-Pandolfi.txt`
+em `Trafego Pago/Jhonatan/`). Funciona em duas camadas, com deduplicação via `event_id` compartilhado:
+
+- **Pixel no navegador** (`src/components/MetaPixelBase.tsx`): carregado em todas as páginas, dispara
+  `PageView` a cada navegação.
+- **API de Conversões, server-side** (`src/lib/meta-capi.ts`): disparada dentro de `/api/lead` assim que
+  o lead é gravado no D1, com telefone/e-mail hasheados (SHA-256) e IP/user-agent do request — não
+  depende do navegador nem de bloqueador de anúncio para funcionar.
+- Os dois mandam o mesmo `event_id` (gerado no formulário, no client) para o evento `Lead` — a Meta
+  deduplica automaticamente.
+
+**Antes de qualquer campanha subir (exigência do contrato):**
+1. Gerar um código de teste em Gerenciador de Eventos → Pixel "Simulador Luciana Pandolfi" → aba
+   **Testar Eventos**, e colocar em `META_CAPI_TEST_EVENT_CODE` (local: `.dev.vars`; produção: secret do
+   Worker) enquanto valida.
+2. Preencher um formulário de teste no site e confirmar que o evento `Lead` aparece em Testar Eventos
+   (tanto a via navegador quanto a via API de Conversões, sem duplicar).
+3. Remover/zerar `META_CAPI_TEST_EVENT_CODE` antes do go-live — com o código de teste preenchido, os
+   eventos NÃO contam pra otimização real da campanha.
+
+**Secret que falta configurar em produção** (não está no dashboard ainda — só local, em `.dev.vars`):
+
+```bash
+npx wrangler secret put META_CAPI_TOKEN --name luciana-pandolfi
+```
+
+(rodar a partir da conta Cloudflare correta — ver histórico do projeto sobre a confusão de contas. Se
+for feito pelo dashboard: Worker `luciana-pandolfi` → Settings → Variables and Secrets → Add → Secret.)
+
+## GA4 — adiado pra fase 2, por decisão já registrada
+
+Confirmado no arquivo confidencial: ninguém validou ainda se existe uma propriedade GA4 pra marca, e
+isso **não é prioridade pro go-live de 01/09/2026** (diferente do Pixel/CAPI, que são obrigatórios).
+Não é uma pendência esquecida — é uma decisão já tomada. Retomar na fase 2, verificando primeiro se já
+existe uma propriedade GA4 antes de criar uma nova do zero.
 
 ## Mensagem automática de WhatsApp para o lead — fora de escopo por decisão do cliente
 

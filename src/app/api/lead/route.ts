@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { insertLead } from "@/lib/db";
+import { sendLeadEventServerSide } from "@/lib/meta-capi";
 
 function str(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -12,8 +14,11 @@ export async function POST(req: NextRequest) {
 
   const nome = str(body.nome) ?? "";
   const whatsapp = str(body.whatsapp) ?? "";
+  const email = str(body.email);
   const formType = body.form_type === "qualificacao" ? "qualificacao" : "isca";
   const sourcePage = str(body.source_page) ?? "unknown";
+  const campaign = str(body.campaign);
+  const eventId = str(body.event_id);
 
   if (!nome || !whatsapp) {
     return NextResponse.json(
@@ -31,10 +36,10 @@ export async function POST(req: NextRequest) {
     await insertLead({
       form_type: formType,
       source_page: sourcePage,
-      campaign: str(body.campaign),
+      campaign,
       nome,
       whatsapp,
-      email: str(body.email),
+      email,
       para_quem: str(body.para_quem),
       quantidade_pessoas: str(body.quantidade_pessoas),
       ja_tem_plano: str(body.ja_tem_plano),
@@ -53,6 +58,27 @@ export async function POST(req: NextRequest) {
       { ok: false, error: "Não foi possível salvar seus dados agora. Tente novamente." },
       { status: 500 }
     );
+  }
+
+  if (eventId) {
+    const capiCall = sendLeadEventServerSide({
+      eventId,
+      eventSourceUrl: req.headers.get("referer") ?? `https://lucianapandolfi.com.br/${sourcePage}`,
+      nome,
+      whatsapp,
+      email,
+      campaign,
+      clientIp: req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for"),
+      clientUserAgent: req.headers.get("user-agent"),
+    });
+    // Não bloqueia a resposta ao usuário, mas usa waitUntil pra garantir que o
+    // Worker não seja finalizado antes do envio ao CAPI completar.
+    try {
+      const { ctx } = await getCloudflareContext({ async: true });
+      ctx.waitUntil(capiCall);
+    } catch {
+      await capiCall;
+    }
   }
 
   return NextResponse.json({ ok: true });

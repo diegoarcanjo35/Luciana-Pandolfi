@@ -24,6 +24,11 @@ export const CREDIBILITY_STATS = {
   familiasEEmpresasAtendidas: null as number | null,
 };
 
+// Pixel da Meta — não é segredo (fica exposto no HTML do navegador de qualquer forma).
+// O token da API de Conversões é diferente: NUNCA colocar aqui, só como secret do Worker
+// (variável de ambiente META_CAPI_TOKEN), lido só no servidor. Ver src/lib/meta-capi.ts.
+export const META_PIXEL_ID = "1009645534315662";
+
 export const SITE_NAME = "Luciana Pandolfi | Planos de Saúde";
 export const SITE_DESCRIPTION =
   "Consultoria gratuita e independente em planos de saúde em São Paulo. Comparação de mercado, acesso a hospitais de referência e simulação sem custo.";

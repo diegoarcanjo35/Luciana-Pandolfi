@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import UtmCapture from "@/components/UtmCapture";
 import CookieConsent from "@/components/CookieConsent";
+import MetaPixelBase from "@/components/MetaPixelBase";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-config";
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <MetaPixelBase />
         <UtmCapture />
         {children}
         <CookieConsent />
