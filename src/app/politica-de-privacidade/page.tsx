@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SITE_URL } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
+  alternates: { canonical: `${SITE_URL}/politica-de-privacidade` },
+  robots: { index: false, follow: true },
 };
 
 export default function PoliticaDePrivacidadePage() {
@@ -19,7 +22,7 @@ export default function PoliticaDePrivacidadePage() {
 
           <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-navy/65">
             <p>
-              Esta política explica como a <strong>L&amp;J Consultoria e Negócios Ltda</strong> ("nós"),
+              Esta política explica como a <strong>L&amp;J Consultoria e Negócios Ltda</strong> (&ldquo;nós&rdquo;),
               responsável pelo site e pela consultoria em planos de saúde da Luciana Pandolfi, trata os
               dados pessoais coletados por aqui, em conformidade com a Lei Geral de Proteção de Dados
               (Lei nº 13.709/2018 — LGPD).

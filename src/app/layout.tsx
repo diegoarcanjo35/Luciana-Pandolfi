@@ -4,7 +4,7 @@ import "./globals.css";
 import UtmCapture from "@/components/UtmCapture";
 import CookieConsent from "@/components/CookieConsent";
 import MetaPixelBase from "@/components/MetaPixelBase";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-config";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,11 +17,27 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: "pt_BR",
+    type: "website",
+    url: SITE_URL,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/team/luciana-e-jhonatan.jpg", width: 1080, height: 1350 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/team/luciana-e-jhonatan.jpg"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

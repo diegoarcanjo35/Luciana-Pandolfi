@@ -1,10 +1,48 @@
-# Site — Luciana Pandolfi | Planos de Saúde
+# Site — L&J Consultoria | Planos de Saúde
 
 Site de conversão e captura de leads. Next.js (App Router) + Tailwind, banco de leads em Cloudflare D1,
 deploy em Cloudflare Workers via OpenNext.
 
-Páginas: `/` (Home), `/plano-empresarial` (campanha Alice/PME), `/plano-familiar` (campanha
-MedSênior/família), `/obrigado`, `/admin` (painel de leads), `/politica-de-privacidade`.
+Páginas: `/` (Home), `/quem-somos`, `/plano-empresarial` (campanha Alice/PME), `/plano-familiar`
+(campanha MedSênior/família), `/obrigado`, `/admin` (painel de leads), `/politica-de-privacidade`.
+
+## Branch `premium-redesign` (26/08/2026)
+
+Reformulação de direção premium sobre a base já validada — arquitetura, D1, admin, Pixel/CAPI, dedup
+por `event_id`, UTMs e todos os formulários foram **preservados intactos** (nenhum schema, rota ou
+payload mudou). O que mudou foi estratégia editorial e conteúdo responsável nas três jornadas:
+
+- **Home (`/`)** — hero editorial dividido com a foto real de Luciana e Jhonatan (não mais só depois de
+  10 blocos), headline trocada (evita a acusação "você está pagando mais caro" sem análise prévia),
+  método em progressão numerada (não 4 cards idênticos), 2 caminhos com hierarquia distinta em vez de 3
+  cards iguais (60+ absorvido na jornada familiar, sem campanha artificial própria), FAQ em duas
+  colunas, "Quem somos" como teaser textual (a foto não se repete — já apareceu no hero).
+- **`/plano-familiar` (MedSênior)** — headline trocada (removida a alegação absoluta "o plano mais
+  completo e acessível de São Paulo"), aviso de responsabilidade visível logo abaixo do hero (não só no
+  rodapé), bloco "o que analisamos", FAQ específico da campanha. A foto da fachada foi **recortada** —
+  a versão original trazia "CARÊNCIA ZERO" e "R$ 810,73" cravados na própria imagem (é a peça de
+  anúncio inteira, não só a fachada), o que republicaria uma condição comercial não confirmada mesmo
+  sendo "só uma foto". Ver `public/creatives/medsenior-fachada-sp.jpg` (só fachada/logo, sem texto
+  comercial) vs. os arquivos `Ci-MedSenior-*.jpg` originais (mantidos como referência histórica, não
+  usados no site).
+- **`/plano-empresarial` (Alice)** — o vídeo saiu de uma seção isolada pós-hero e foi para dentro da
+  primeira dobra, ao lado do headline (era o pedido central do briefing: o vídeo é o próprio anúncio, a
+  continuidade precisa ser imediata). Poster trocado — a versão anterior tinha 64×64px; o novo poster é
+  um frame real extraído do vídeo com `ffmpeg` (`public/creatives/alice-video-poster.jpg`, 1080×1920).
+  Headline trocada (removidas "não perca a condição especial" e "sua empresa provavelmente está pagando
+  a tabela errada" — ambas presumem uma conclusão antes da análise). Bloco novo listando os fatores que
+  mudam a condição (vidas, idade, região, acomodação, coparticipação, rede).
+
+**Segurança factual aplicada nas duas landings:** nenhuma condição comercial da MedSênior ou da Alice
+(carência, coparticipação, desconto, preço, hospital específico) é afirmada como vigente — só os
+avisos "condições variam conforme perfil, confirmadas durante a análise". Os criativos vencedores
+continuam sendo a referência de ângulo/mensagem (message match), não uma fonte de condições comerciais
+atuais.
+
+**Números internos de tráfego não viraram prova pública.** Os PDFs de planejamento (`Plano-90-Dias...`,
+`Relatorio-Criativos...`) trazem 18 campanhas, ~R$8.530 investidos, ~504 formulários, CPLs e projeções
+— são dados internos de mídia, não equivalem a clientes atendidos. Nada disso apareceu como número no
+site (a `CredibilityBar` segue sem estatística nenhuma, como já estava).
 
 ## Rodando localmente
 
@@ -71,9 +109,10 @@ locais indicados.
   do escritório dos dois) está no bloco "Quem somos" da Home, substituindo o selo "L&J" placeholder.
 - **Promoção "20% na 1ª mensalidade" da MedSênior** (`/plano-familiar`): só reaparecer na página se a
   cliente confirmar que a condição ainda está ativa na operadora, com data de validade real.
-- **Registro profissional (SUSEP)**: hoje o rodapé diz "a confirmar com a cliente". Substituir pelo
-  número real assim que informado — é citado como requisito de conformidade no diagnóstico de
-  Instagram.
+- **Registro profissional**: removido do rodapé público (`src/components/Footer.tsx`) — um placeholder
+  "a confirmar com a cliente" visível para qualquer visitante não é aceitável em produção. Não
+  necessariamente é SUSEP; confirmar com a cliente qual é o órgão/registro correto para a atividade
+  antes de reativar a linha (comentário no código aponta onde reinserir).
 - **WhatsApp**: número atual (11) 95609-8194, informado no início do projeto. Confirmar se é
   definitivo antes do go-live — está em `src/lib/site-config.ts`.
 - **Domínio**: o site está sendo construído sem domínio definido (é responsabilidade da cliente
@@ -121,6 +160,28 @@ existe uma propriedade GA4 antes de criar uma nova do zero.
 
 O fluxo pós-envio não dispara mensagem automática via API do WhatsApp. Em vez disso, `/obrigado`
 mostra um botão de WhatsApp com mensagem pré-preenchida para o próprio lead iniciar a conversa.
+
+## Honestidade de copy — "envio imediato" do guia
+
+O texto do bloco de captura (guia de hospitais) dizia "receba o guia completo agora, no seu WhatsApp",
+implicando envio automático. Isso nunca foi automatizado (ver seção "Mensagem automática de WhatsApp"
+abaixo) — o texto foi trocado para "nossa equipe te envia o guia completo pelo WhatsApp", que descreve
+o que realmente acontece (entrega manual pela equipe, dentro do SLA de resposta já informado).
+
+## SEO e Open Graph
+
+`src/lib/site-config.ts` define `SITE_URL` — hoje aponta para a URL real do Worker
+(`https://luciana-pandolfi.criativoselevados.workers.dev`), já que o domínio próprio ainda não foi
+registrado (responsabilidade da cliente). **Trocar esse valor assim que o domínio definitivo estiver
+no ar** — todo canonical, Open Graph e o `sitemap.xml` (`src/app/sitemap.ts`) dependem dele.
+
+- Cada página pública tem `title`, `description`, `alternates.canonical` e `openGraph` próprios (Home,
+  Quem somos, MedSênior, Alice, Política de Privacidade).
+- As imagens de Open Graph usam assets reais já existentes (nunca um screenshot automático da página):
+  foto da equipe na Home/Quem somos, fachada da MedSênior na landing familiar, frame do vídeo na
+  landing empresarial.
+- `/obrigado` e `/admin` seguem `noindex` (já estava assim antes desta branch).
+- `robots.txt` aponta pro `sitemap.xml`.
 
 ## Captura de UTM
 

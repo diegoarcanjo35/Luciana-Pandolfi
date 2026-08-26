@@ -32,3 +32,8 @@ export const META_PIXEL_ID = "1009645534315662";
 export const SITE_NAME = "L&J Consultoria | Planos de Saúde";
 export const SITE_DESCRIPTION =
   "Consultoria gratuita e independente em planos de saúde em São Paulo. Comparação de mercado, acesso a hospitais de referência e simulação sem custo.";
+
+// Domínio definitivo ainda não existe (registro é responsabilidade da cliente — ver README).
+// Usamos a URL real de staging no Cloudflare Workers como base de metadados/OG por enquanto;
+// trocar assim que o domínio próprio estiver registrado e apontado.
+export const SITE_URL = "https://luciana-pandolfi.criativoselevados.workers.dev";

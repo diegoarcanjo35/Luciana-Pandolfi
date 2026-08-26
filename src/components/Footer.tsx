@@ -15,9 +15,10 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
         <p>
           Consultoria gratuita e independente em planos de saúde · São Paulo/SP e todo o Brasil
         </p>
-        <p className="text-xs text-cream/40">
-          L&amp;J Consultoria e Negócios Ltda · Registro profissional (SUSEP): a confirmar com a cliente
-        </p>
+        {/* Registro profissional: removido da versão pública até a cliente confirmar o número
+            real e o órgão correto (não necessariamente SUSEP para esta atividade). Ver README —
+            "Pendências" — antes de reativar esta linha. Nunca publicar um placeholder aqui. */}
+        <p className="text-xs text-cream/40">L&amp;J Consultoria e Negócios Ltda</p>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <Link href="/quem-somos" className="underline decoration-gold/40 hover:text-cream">
             Quem somos

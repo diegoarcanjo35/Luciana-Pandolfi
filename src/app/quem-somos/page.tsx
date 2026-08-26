@@ -1,14 +1,25 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import { WHATSAPP_MESSAGES } from "@/lib/site-config";
+import { SITE_URL, WHATSAPP_MESSAGES } from "@/lib/site-config";
+
+const PAGE_URL = `${SITE_URL}/quem-somos`;
 
 export const metadata: Metadata = {
   title: "Quem somos",
   description:
     "L&J Consultoria — Luciana Pandolfi e Jhonatan, consultoria gratuita e independente em planos de saúde em São Paulo.",
+  alternates: { canonical: PAGE_URL },
+  openGraph: {
+    url: PAGE_URL,
+    title: "Quem somos | L&J Consultoria",
+    description:
+      "Luciana Pandolfi e Jhonatan, consultoria gratuita e independente em planos de saúde em São Paulo.",
+    images: [{ url: "/team/luciana-e-jhonatan.jpg", width: 1080, height: 1350 }],
+  },
 };
 
 export default function QuemSomosPage() {
@@ -88,12 +99,12 @@ export default function QuemSomosPage() {
               @lucianapandolfi.consultora no Instagram
             </a>
             <div className="mt-6">
-              <a
+              <Link
                 href="/#simulacao"
                 className="inline-block rounded-full bg-gold px-8 py-4 text-base font-semibold text-navy transition-colors hover:bg-gold-light"
               >
                 Quero minha simulação gratuita
-              </a>
+              </Link>
             </div>
           </div>
         </section>
