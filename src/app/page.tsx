@@ -25,17 +25,17 @@ export default function HomePage() {
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent"
           />
-          <div className="mx-auto grid max-w-6xl sm:grid-cols-[1.1fr_1fr] sm:items-stretch">
-            <div className="flex flex-col justify-center gap-5 px-4 py-16 sm:px-8 sm:py-24 lg:px-12">
+          <div className="mx-auto grid max-w-6xl sm:grid-cols-[0.9fr_1.15fr] sm:items-stretch">
+            <div className="flex flex-col justify-center gap-5 px-4 py-14 sm:px-8 sm:py-24 lg:px-12">
               <p className="eyebrow eyebrow-on-dark">L&amp;J Consultoria · São Paulo</p>
-              <h1 className="font-serif-display text-3xl font-semibold leading-[1.15] text-balance sm:text-4xl lg:text-[2.75rem]">
+              <h1 className="headline-editorial text-3xl text-cream sm:text-4xl lg:text-[2.65rem]">
                 Seu plano de saúde precisa fazer sentido{" "}
                 <span className="italic text-gold-light">antes</span> de você precisar usá-lo.
               </h1>
               <p className="max-w-md text-base leading-relaxed text-cream/75">
-                Luciana Pandolfi e Jhonatan comparam o mercado, verificam a rede credenciada e
-                explicam o que cada contrato entrega — para você e sua empresa decidirem com
-                informação, não com achismo.
+                Comparamos o mercado, verificamos a rede credenciada e explicamos o que cada
+                contrato entrega — para você e sua empresa decidirem com informação, não com
+                achismo.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
@@ -56,28 +56,32 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="relative min-h-[20rem] sm:min-h-0">
-              <Image
-                src="/team/luciana-e-jhonatan.jpg"
-                alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
-                fill
-                sizes="(min-width: 640px) 45vw, 100vw"
-                className="object-cover object-top"
-                priority
-              />
-              <div
-                aria-hidden
-                className="absolute inset-0 bg-gradient-to-t from-navy-deep/80 via-navy-deep/10 to-transparent sm:bg-gradient-to-r sm:from-navy-deep/50 sm:via-transparent sm:to-transparent"
-              />
-              <div className="absolute bottom-5 left-5 flex items-center gap-2.5 rounded-full bg-navy-deep/80 py-2 pl-2 pr-4 backdrop-blur-sm">
+            <div className="relative flex min-h-[22rem] flex-col sm:min-h-0">
+              <div className="relative flex-1">
+                <Image
+                  src="/team/luciana-e-jhonatan.jpg"
+                  alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
+                  fill
+                  sizes="(min-width: 640px) 55vw, 100vw"
+                  className="object-cover object-top"
+                  priority
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-navy-deep/55 via-transparent to-transparent"
+                />
+              </div>
+              {/* Legenda editorial — não é um selo flutuante, é a assinatura da foto */}
+              <div className="relative flex items-center gap-3 border-t border-gold/50 bg-navy-deep px-5 py-3.5 sm:px-8">
                 <span
                   aria-hidden
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gold bg-navy font-serif-display text-xs text-gold-light"
+                  className="font-serif-display text-sm italic text-gold-light"
                 >
-                  L&J
+                  L&amp;J
                 </span>
-                <span className="text-xs font-medium text-cream">
-                  Luciana Pandolfi &amp; Jhonatan
+                <span className="h-3 w-px bg-gold/40" aria-hidden />
+                <span className="text-xs font-medium uppercase tracking-wide text-cream/80">
+                  Luciana Pandolfi &amp; Jhonatan — sócios da consultoria
                 </span>
               </div>
             </div>
@@ -95,7 +99,7 @@ export default function HomePage() {
             </div>
             <div>
               <p className="eyebrow">O que costuma passar despercebido</p>
-              <h2 className="mt-2 font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
+              <h2 className="mt-2 headline-editorial text-2xl text-navy sm:text-3xl">
                 A mensalidade é só uma parte da conta.
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-navy/65">
@@ -116,7 +120,7 @@ export default function HomePage() {
         <section className="bg-white px-4 py-16 sm:px-6">
           <div className="mx-auto max-w-3xl">
             <p className="eyebrow text-center">Como conduzimos a análise</p>
-            <h2 className="mt-2 text-center font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
+            <h2 className="mt-2 text-center headline-editorial text-2xl text-navy sm:text-3xl">
               Quatro etapas, do jeito que deveria ser
             </h2>
             <ol className="mt-12 flex flex-col">
@@ -142,17 +146,15 @@ export default function HomePage() {
                   d: "Se fizer sentido seguir, conduzimos a contratação ou a migração. Se não fizer, a análise já é sua — sem obrigação.",
                 },
               ].map((step, i, arr) => (
-                <li key={step.n} className="relative flex gap-6 pb-10 last:pb-0">
+                <li key={step.n} className="relative flex gap-7 pb-12 last:pb-0">
                   {i < arr.length - 1 && (
                     <span
                       aria-hidden
-                      className="absolute left-[1.35rem] top-10 h-[calc(100%-1.5rem)] w-px bg-navy/10"
+                      className="absolute left-[1.15rem] top-12 h-[calc(100%-2rem)] w-px bg-gold/25"
                     />
                   )}
-                  <span className="font-serif-display text-2xl font-semibold text-gold-dark/70">
-                    {step.n}
-                  </span>
-                  <div className="pt-1">
+                  <span className="numeral w-9 shrink-0 text-4xl sm:text-5xl">{step.n}</span>
+                  <div className="pt-2">
                     <p className="font-semibold text-navy">{step.t}</p>
                     <p className="mt-1 max-w-md text-sm leading-relaxed text-navy/60">{step.d}</p>
                   </div>
@@ -166,16 +168,17 @@ export default function HomePage() {
         <section className="px-4 py-16 sm:px-6">
           <div className="mx-auto max-w-5xl">
             <p className="eyebrow text-center">Para quem é</p>
-            <h2 className="mt-2 text-center font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
+            <h2 className="mt-2 text-center headline-editorial text-2xl text-navy sm:text-3xl">
               Duas jornadas, dois pontos de partida
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-5">
               <Link
                 href="/plano-familiar"
-                className="group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-navy p-7 text-cream shadow-sm transition-shadow hover:shadow-xl sm:col-span-3 sm:min-h-[16rem]"
+                className="group relative flex flex-col justify-end overflow-hidden bg-navy p-7 text-cream shadow-sm transition-shadow hover:shadow-xl sm:col-span-3 sm:min-h-[17rem]"
               >
+                <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-medsenior" />
                 <span className="eyebrow eyebrow-on-dark">Pessoa física</span>
-                <p className="mt-2 font-serif-display text-xl font-semibold sm:text-2xl">
+                <p className="headline-editorial mt-2 text-xl text-cream sm:text-2xl">
                   Família, individual e 60+
                 </p>
                 <p className="mt-2 max-w-sm text-sm leading-relaxed text-cream/70">
@@ -188,10 +191,11 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/plano-empresarial"
-                className="group flex flex-col justify-end rounded-2xl border border-navy/10 bg-white p-7 shadow-sm transition-shadow hover:shadow-xl sm:col-span-2 sm:min-h-[16rem]"
+                className="group relative flex flex-col justify-end border border-navy/10 bg-white p-7 shadow-sm transition-shadow hover:shadow-xl sm:col-span-2 sm:min-h-[17rem]"
               >
+                <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-alice" />
                 <span className="eyebrow">Pessoa jurídica</span>
-                <p className="mt-2 font-serif-display text-xl font-semibold text-navy">
+                <p className="headline-editorial mt-2 text-xl text-navy">
                   Empresa, CNPJ ou MEI
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-navy/60">
@@ -217,7 +221,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
             <div>
               <p className="eyebrow eyebrow-on-dark">Material gratuito</p>
-              <h2 className="mt-2 font-serif-display text-2xl font-semibold sm:text-3xl">
+              <h2 className="mt-2 headline-editorial text-2xl text-cream sm:text-3xl">
                 Hospitais de referência de São Paulo e quais planos dão acesso a cada um
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-cream/70">
@@ -237,7 +241,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-[1fr_1.4fr] sm:items-start">
             <div>
               <p className="eyebrow">Dúvidas comuns</p>
-              <h2 className="mt-2 font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
+              <h2 className="mt-2 headline-editorial text-2xl text-navy sm:text-3xl">
                 Perguntas frequentes
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-navy/55">
@@ -250,12 +254,18 @@ export default function HomePage() {
         </section>
 
         {/* Quem somos — teaser textual, sem repetir a foto do hero */}
-        <section className="bg-white px-4 py-14 sm:px-6">
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-            <p className="eyebrow">Quem conduz a sua análise</p>
-            <h2 className="font-serif-display text-xl font-semibold text-navy sm:text-2xl">
-              Luciana Pandolfi &amp; Jhonatan, sócios da L&amp;J Consultoria
-            </h2>
+        <section className="bg-white px-4 py-16 sm:px-6">
+          <div className="mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
+            <span
+              aria-hidden
+              className="font-serif-display text-3xl italic text-gold/70"
+            >
+              L&amp;J
+            </span>
+            <blockquote className="headline-editorial text-xl text-navy sm:text-2xl">
+              Quem atende é quem assina o nome — Luciana Pandolfi &amp; Jhonatan.
+            </blockquote>
+            <div className="gold-rule-center" />
             <p className="max-w-md text-sm leading-relaxed text-navy/60">
               Acesso direto às principais operadoras e à rede de hospitais de referência de São
               Paulo — o diferencial que guia cada recomendação antes de chegar até você.
@@ -274,7 +284,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
             <div className="text-center sm:text-left">
               <p className="eyebrow">Último passo</p>
-              <h2 className="mt-2 font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
+              <h2 className="mt-2 headline-editorial text-2xl text-navy sm:text-3xl">
                 Vamos entender o que faz sentido para o seu caso?
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-navy/60">

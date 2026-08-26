@@ -6,7 +6,13 @@
 }
 
 /* Identidade real da marca — coletada do Instagram @lucianapandolfi.consultora
-   (selo "L&J" dos destaques: círculo marinho, anel e wordmark dourados). */
+   (selo "L&J" dos destaques: círculo marinho, anel e wordmark dourados).
+
+   Sistema institucional L&J + assinaturas contextuais por campanha:
+   - MedSênior: verde profundo (não o verde vibrante do ad, um tom mais editorial/
+     institucional — assinatura discreta, não repaint da página inteira).
+   - Alice: bordô, derivado da blusa vermelha da Luciana no vídeo do anúncio —
+     também abaixado pra um tom editorial, não o vermelho puro do vídeo. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -21,6 +27,16 @@
   --color-gold: #c9a227;
   --color-gold-light: #e0c065;
   --color-gold-dark: #a3811c;
+
+  /* Assinatura contextual — MedSênior (/plano-familiar) */
+  --color-medsenior: #2f5d3f;
+  --color-medsenior-deep: #1e3f2a;
+  --color-medsenior-tint: #eaf1ea;
+
+  /* Assinatura contextual — Alice (/plano-empresarial) */
+  --color-alice: #7a2634;
+  --color-alice-deep: #551a24;
+  --color-alice-tint: #f5e9ea;
 }
 
 body {
@@ -57,4 +73,41 @@ body {
   height: 2px;
   margin-inline: auto;
   background: var(--color-gold);
+}
+
+/* Numeral editorial grande, usado no bloco de método e em listas de etapas —
+   substitui o padrão genérico de "badge circular numerado". */
+.numeral {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-variant-numeric: oldstyle-nums;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-gold);
+  opacity: 0.55;
+}
+
+/* Linha fina institucional — separador editorial, não caixa/sombra. */
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.25;
+}
+
+/* Título editorial com quebra controlada e ritmo mais solto que o padrão do
+   Tailwind — usado nos heroes das 3 páginas em vez de um único tamanho fixo. */
+.headline-editorial {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

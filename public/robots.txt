@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /api
-
-Sitemap: https://luciana-pandolfi.criativoselevados.workers.dev/sitemap.xml

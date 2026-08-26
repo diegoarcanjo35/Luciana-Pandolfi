@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     title: "Quem somos | L&J Consultoria",
     description:
       "Luciana Pandolfi e Jhonatan, consultoria gratuita e independente em planos de saúde em São Paulo.",
-    images: [{ url: "/team/luciana-e-jhonatan.jpg", width: 1080, height: 1350 }],
+    images: [{ url: "/og/lj.jpg", width: 1200, height: 630 }],
   },
 };
 
@@ -27,63 +27,78 @@ export default function QuemSomosPage() {
     <>
       <Header ctaHref="/#simulacao" />
       <main className="flex-1">
-        <section className="bg-white px-4 py-16 sm:px-6 sm:py-24">
-          <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-[1fr_1.1fr] sm:items-center">
-            {/* Foto com moldura em arco + selo sobreposto, no mesmo padrão visual
-                usado nos outros sites da agência (Cris Paula, Vallery Alves). */}
-            <div className="relative mx-auto w-full max-w-sm">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-t-[9999px] rounded-b-3xl shadow-xl">
-                <Image
-                  src="/team/luciana-e-jhonatan.jpg"
-                  alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria, no escritório"
-                  fill
-                  sizes="(min-width: 640px) 24rem, 90vw"
-                  className="object-cover object-top"
-                  priority
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-navy-deep/70 via-transparent to-transparent"
-                />
-                <div
-                  aria-hidden
-                  className="absolute left-1/2 top-4 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border-2 border-gold bg-navy/90 font-serif-display text-base text-gold-light shadow-md"
-                >
-                  L&J
-                </div>
-              </div>
-              <div className="absolute -bottom-5 left-1/2 w-[85%] -translate-x-1/2 rounded-xl border border-navy/10 bg-white px-4 py-3 text-center shadow-lg">
-                <p className="text-sm font-semibold text-navy">Atendimento personalizado</p>
-                <p className="text-xs text-navy/50">Antes, durante e depois da contratação</p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-5 text-center sm:mt-0 sm:text-left">
-              <p className="eyebrow sm:text-left">Sobre a L&amp;J</p>
-              <h1 className="font-serif-display text-3xl font-semibold leading-tight text-navy sm:text-4xl">
+        {/* Hero institucional — assimétrico, monograma grande, sem moldura em arco genérica */}
+        <section className="relative overflow-hidden bg-navy-deep">
+          <div className="mx-auto grid max-w-6xl sm:grid-cols-[1.05fr_1fr] sm:items-stretch">
+            <div className="flex flex-col justify-center gap-6 px-4 py-16 sm:px-8 sm:py-24">
+              <span aria-hidden className="font-serif-display text-5xl italic text-gold-light/80">
+                L&amp;J
+              </span>
+              <p className="eyebrow eyebrow-on-dark">Sobre a consultoria</p>
+              <h1 className="headline-editorial text-3xl text-cream sm:text-4xl lg:text-[2.75rem]">
                 Decisão de plano de saúde, com informação — não com achismo.
               </h1>
-              <p className="text-base leading-relaxed text-navy/65">
-                A L&amp;J nasceu para resolver um problema simples: a maioria das pessoas e
-                empresas contrata plano de saúde sem comparar de verdade — e só descobre o que
-                ficou de fora do contrato quando precisa usar.
-              </p>
-              <p className="text-base leading-relaxed text-navy/65">
-                Somos uma consultoria gratuita e independente, formada por Luciana Pandolfi e
-                Jhonatan. Nosso diferencial é o acesso direto às principais operadoras e à rede de
-                hospitais de referência de São Paulo — é esse acesso que guia cada análise antes
-                de qualquer recomendação.
-              </p>
-              <blockquote className="border-l-2 border-gold py-1 pl-4 text-left font-serif-display text-lg italic text-navy/80">
+              <blockquote className="border-l-2 border-gold py-1 pl-5 text-left font-serif-display text-lg italic text-cream/85">
                 &ldquo;Comparamos o mercado inteiro antes de qualquer recomendação — para você
                 decidir com informação, não com achismo.&rdquo;
               </blockquote>
+              <p className="max-w-md text-sm text-cream/50">
+                Luciana Pandolfi &amp; Jhonatan — sócios da L&amp;J Consultoria
+              </p>
+            </div>
+            <div className="relative min-h-[20rem] sm:min-h-0">
+              <Image
+                src="/team/luciana-e-jhonatan.jpg"
+                alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria, no escritório"
+                fill
+                sizes="(min-width: 640px) 45vw, 100vw"
+                className="object-cover object-top"
+                priority
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-r from-navy-deep/50 via-transparent to-transparent sm:bg-gradient-to-r"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Quem faz o quê — a consultoria é dos dois, com função própria de cada sócio */}
+        <section className="bg-white px-4 py-16 sm:px-6">
+          <div className="mx-auto max-w-3xl">
+            <p className="eyebrow">Quem assina o nome</p>
+            <h2 className="headline-editorial mt-2 max-w-lg text-2xl text-navy sm:text-3xl">
+              A consultoria nasceu para resolver um problema simples
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-navy/65">
+              A maioria das pessoas e empresas contrata plano de saúde sem comparar de verdade — e
+              só descobre o que ficou de fora do contrato quando precisa usar. Somos uma
+              consultoria gratuita e independente, formada por Luciana Pandolfi e Jhonatan. Nosso
+              diferencial é o acesso direto às principais operadoras e à rede de hospitais de
+              referência de São Paulo — é esse acesso que guia cada análise antes de qualquer
+              recomendação.
+            </p>
+            <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-navy/10 bg-navy/10 sm:grid-cols-2">
+              <div className="bg-cream/60 p-6">
+                <p className="font-serif-display text-lg text-navy">Luciana Pandolfi</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-navy/60">
+                  Especialista em planos de saúde nacional, à frente do atendimento e da análise
+                  comparativa de cada caso.
+                </p>
+              </div>
+              <div className="bg-cream/60 p-6">
+                <p className="font-serif-display text-lg text-navy">Jhonatan</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-navy/60">
+                  Sócio da L&amp;J, responsável pela estrutura da consultoria e pelo relacionamento
+                  com as operadoras parceiras.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
         <section className="bg-cream-dark/50 px-4 py-14 sm:px-6">
-          <div className="mx-auto max-w-2xl rounded-2xl border border-navy/10 bg-white p-6 text-center shadow-sm sm:p-8">
+          <div className="mx-auto max-w-2xl border border-navy/10 bg-white p-6 text-center shadow-sm sm:p-8">
             <p className="text-sm font-medium text-navy/70">Especialista em Planos de Saúde Nacional</p>
             <ul className="mt-3 flex flex-col gap-1.5 text-sm text-navy/60">
               <li>💲 Redução de custos para empresas e famílias</li>
