@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -206,18 +207,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Bloco 9 — Quem somos.
-            O site é da L&J (Luciana + Jhonatan), não só da Luciana — correção explícita
-            da cliente. Falta a foto real dos dois (do grid do Instagram) pra substituir
-            o selo abaixo: salvar em public/team/luciana-jhonatan.jpg e trocar o <div>
-            do badge por um <Image src="/team/luciana-jhonatan.jpg" .../>. */}
+        {/* Bloco 9 — Quem somos. O site é da L&J (Luciana + Jhonatan), não só da Luciana. */}
         <section className="bg-white px-4 py-16 sm:px-6">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-            <div
-              aria-hidden
-              className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-gold bg-navy font-serif-display text-2xl text-gold-light"
-            >
-              L&J
+            <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-gold shadow-md">
+              <Image
+                src="/team/luciana-e-jhonatan.jpg"
+                alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
+                fill
+                sizes="8rem"
+                className="object-cover"
+              />
             </div>
             <h2 className="font-serif-display text-xl font-semibold text-navy">
               Luciana Pandolfi &amp; Jhonatan

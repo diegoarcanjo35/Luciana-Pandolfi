@@ -67,10 +67,8 @@ locais indicados.
   está montado com 3 cards em estado "em breve" (empresa/família/sênior). Assim que os depoimentos
   reais chegarem (respeitando a regra de nunca expor condição de saúde), substituir o conteúdo dos
   cards — não trocar a posição do bloco.
-- **Foto de Luciana e Jhonatan juntos** (bloco "Quem somos" na Home, `src/app/page.tsx`): o site é da
-  L&J (os dois sócios), não só da Luciana — correção explícita da cliente. Hoje ainda é o selo "L&J"
-  como placeholder. Assim que tiver o arquivo da foto real (a do grid do Instagram, escritório dos
-  dois), salvar em `public/team/` e trocar pelo `<Image>` — instruções no comentário acima da seção.
+- ~~Foto de Luciana e Jhonatan juntos~~ — resolvido. `public/team/luciana-e-jhonatan.jpg` (a foto real
+  do escritório dos dois) está no bloco "Quem somos" da Home, substituindo o selo "L&J" placeholder.
 - **Promoção "20% na 1ª mensalidade" da MedSênior** (`/plano-familiar`): só reaparecer na página se a
   cliente confirmar que a condição ainda está ativa na operadora, com data de validade real.
 - **Registro profissional (SUSEP)**: hoje o rodapé diz "a confirmar com a cliente". Substituir pelo
