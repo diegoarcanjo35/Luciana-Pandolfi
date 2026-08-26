@@ -62,13 +62,15 @@ locais indicados.
 - **Números de credibilidade** (`src/components/CredibilityBar.tsx`): "+X anos de mercado" e "+X
   famílias e empresas atendidas" ficaram de fora da barra de credibilidade da Home. Assim que a
   cliente confirmar os números reais, adicionar ao array `ITEMS`.
-- **Prova social** (bloco 6 do briefing da Home): não existe depoimento, print de WhatsApp ou foto de
-  visita a operadora/hospital ainda. O bloco foi omitido da Home por enquanto — não tem como manter a
-  posição "promessa → prova → método..." sem prova real. Assim que houver material (respeitando a
-  regra de nunca expor condição de saúde), criar o componente e reencaixar entre "Para quem é" e a
-  isca de captura.
-- **Foto profissional da Luciana** (bloco "Quem é você" na Home): hoje é um círculo com iniciais "LP".
-  Trocar por foto real assim que disponível.
+- **Prova social** (`src/components/SocialProofPending.tsx`, bloco 6 da Home): a cliente foi acionada
+  para mandar depoimentos. Por instrução explícita, o bloco não fica ausente enquanto isso não chega —
+  está montado com 3 cards em estado "em breve" (empresa/família/sênior). Assim que os depoimentos
+  reais chegarem (respeitando a regra de nunca expor condição de saúde), substituir o conteúdo dos
+  cards — não trocar a posição do bloco.
+- **Foto de Luciana e Jhonatan juntos** (bloco "Quem somos" na Home, `src/app/page.tsx`): o site é da
+  L&J (os dois sócios), não só da Luciana — correção explícita da cliente. Hoje ainda é o selo "L&J"
+  como placeholder. Assim que tiver o arquivo da foto real (a do grid do Instagram, escritório dos
+  dois), salvar em `public/team/` e trocar pelo `<Image>` — instruções no comentário acima da seção.
 - **Promoção "20% na 1ª mensalidade" da MedSênior** (`/plano-familiar`): só reaparecer na página se a
   cliente confirmar que a condição ainda está ativa na operadora, com data de validade real.
 - **Registro profissional (SUSEP)**: hoje o rodapé diz "a confirmar com a cliente". Substituir pelo

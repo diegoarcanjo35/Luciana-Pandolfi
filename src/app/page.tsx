@@ -6,6 +6,7 @@ import CredibilityBar from "@/components/CredibilityBar";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
 import LeadFormQualificacao from "@/components/LeadFormQualificacao";
+import SocialProofPending from "@/components/SocialProofPending";
 import { WHATSAPP_MESSAGES } from "@/lib/site-config";
 
 export default function HomePage() {
@@ -168,6 +169,9 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Bloco 6 — Prova social */}
+        <SocialProofPending />
+
         {/* Bloco 7 — Isca de captura */}
         <section id="guia" className="bg-navy px-4 py-16 text-cream sm:px-6">
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
@@ -202,7 +206,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Bloco 9 — Quem é você */}
+        {/* Bloco 9 — Quem somos.
+            O site é da L&J (Luciana + Jhonatan), não só da Luciana — correção explícita
+            da cliente. Falta a foto real dos dois (do grid do Instagram) pra substituir
+            o selo abaixo: salvar em public/team/luciana-jhonatan.jpg e trocar o <div>
+            do badge por um <Image src="/team/luciana-jhonatan.jpg" .../>. */}
         <section className="bg-white px-4 py-16 sm:px-6">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
             <div
@@ -212,9 +220,9 @@ export default function HomePage() {
               L&J
             </div>
             <h2 className="font-serif-display text-xl font-semibold text-navy">
-              Luciana Pandolfi
+              Luciana Pandolfi &amp; Jhonatan
             </h2>
-            <p className="text-sm font-medium text-navy/70">Especialista em Planos de Saúde Nacional</p>
+            <p className="text-sm font-medium text-navy/70">L&amp;J Consultoria — Planos de Saúde Nacional</p>
             <ul className="flex flex-col gap-1.5 text-sm text-navy/60">
               <li>💲 Redução de custos para empresas e famílias</li>
               <li>🏥 Hospitais de referência</li>
