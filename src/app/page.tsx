@@ -214,11 +214,12 @@ export default function HomePage() {
             <h2 className="font-serif-display text-xl font-semibold text-navy">
               Luciana Pandolfi
             </h2>
-            <p className="max-w-md text-sm leading-relaxed text-navy/60">
-              Especialista em planos de saúde nacional, com acesso direto às principais
-              operadoras e à rede de hospitais de referência de São Paulo — redução de custo para
-              empresas e famílias, com atendimento personalizado do início ao fim.
-            </p>
+            <p className="text-sm font-medium text-navy/70">Especialista em Planos de Saúde Nacional</p>
+            <ul className="flex flex-col gap-1.5 text-sm text-navy/60">
+              <li>💲 Redução de custos para empresas e famílias</li>
+              <li>🏥 Hospitais de referência</li>
+              <li>🤝 Atendimento personalizado</li>
+            </ul>
             <a
               href="https://www.instagram.com/lucianapandolfi.consultora/"
               target="_blank"
