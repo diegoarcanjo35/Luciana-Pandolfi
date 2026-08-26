@@ -62,7 +62,7 @@ export default function LeadFormIsca({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <label htmlFor="isca-nome" className="text-sm font-medium text-slate-700">
+        <label htmlFor="isca-nome" className="text-sm font-medium text-navy/80">
           Nome
         </label>
         <input
@@ -72,11 +72,11 @@ export default function LeadFormIsca({
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           placeholder="Seu nome"
-          className="rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+          className="rounded-lg border border-navy/20 px-4 py-3 text-base text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="isca-whatsapp" className="text-sm font-medium text-slate-700">
+        <label htmlFor="isca-whatsapp" className="text-sm font-medium text-navy/80">
           WhatsApp
         </label>
         <input
@@ -87,11 +87,11 @@ export default function LeadFormIsca({
           value={whatsapp}
           onChange={(e) => setWhatsapp(maskPhoneBR(e.target.value))}
           placeholder="(11) 90000-0000"
-          className="rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+          className="rounded-lg border border-navy/20 px-4 py-3 text-base text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="isca-email" className="text-sm font-medium text-slate-700">
+        <label htmlFor="isca-email" className="text-sm font-medium text-navy/80">
           E-mail
         </label>
         <input
@@ -101,7 +101,7 @@ export default function LeadFormIsca({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="seuemail@exemplo.com"
-          className="rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+          className="rounded-lg border border-navy/20 px-4 py-3 text-base text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
         />
       </div>
 
@@ -110,11 +110,11 @@ export default function LeadFormIsca({
       <button
         type="submit"
         disabled={loading}
-        className="mt-1 rounded-lg bg-teal-600 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-teal-700 disabled:opacity-60"
+        className="mt-1 rounded-lg bg-gold px-6 py-3.5 text-base font-semibold text-navy transition-colors hover:bg-gold-light disabled:opacity-60"
       >
         {loading ? "Enviando..." : "Receber o guia gratuito"}
       </button>
-      <p className="text-center text-xs text-slate-500">
+      <p className="text-center text-xs text-navy/40">
         Envio imediato · Sem custo · Seus dados não são compartilhados com terceiros
       </p>
     </form>

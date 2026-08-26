@@ -1,15 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f9f8;
-  --foreground: #0b2436;
+  --background: #faf7f0;
+  --foreground: #0b1f33;
 }
 
+/* Identidade real da marca — coletada do Instagram @lucianapandolfi.consultora
+   (selo "L&J" dos destaques: círculo marinho, anel e wordmark dourados). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-playfair);
+
+  --color-navy: #0b1f33;
+  --color-navy-deep: #061320;
+  --color-navy-light: #16324d;
+  --color-cream: #faf7f0;
+  --color-cream-dark: #f0ead9;
+  --color-gold: #c9a227;
+  --color-gold-light: #e0c065;
+  --color-gold-dark: #a3811c;
 }
 
 body {
@@ -20,4 +31,30 @@ body {
 
 .font-serif-display {
   font-family: var(--font-playfair), Georgia, serif;
+}
+
+.eyebrow {
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold-dark);
+}
+
+.eyebrow-on-dark {
+  color: var(--color-gold-light);
+}
+
+.gold-rule {
+  width: 3rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-gold), transparent);
+}
+
+.gold-rule-center {
+  width: 3rem;
+  height: 2px;
+  margin-inline: auto;
+  background: var(--color-gold);
 }

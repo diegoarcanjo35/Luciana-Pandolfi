@@ -27,19 +27,19 @@ export default async function ObrigadoPage({
         <div className="mx-auto max-w-xl text-center">
           <div
             aria-hidden
-            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 text-3xl text-teal-700"
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-navy text-3xl text-gold-light"
           >
             ✓
           </div>
-          <h1 className="mt-6 font-serif-display text-2xl font-semibold text-[#0b2436] sm:text-3xl">
+          <h1 className="mt-6 font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
             Recebemos seus dados. Obrigada!
           </h1>
-          <p className="mt-4 text-base leading-relaxed text-slate-600">
+          <p className="mt-4 text-base leading-relaxed text-navy/65">
             Sua análise está a caminho — a Luciana retorna em até <strong>2 horas úteis</strong> (para
             quem pediu a simulação) ou em até <strong>24 horas úteis</strong> (para análises
             comparativas completas).
           </p>
-          <p className="mt-3 text-base leading-relaxed text-slate-600">
+          <p className="mt-3 text-base leading-relaxed text-navy/65">
             Quer adiantar a conversa agora mesmo? Chame no WhatsApp.
           </p>
           <a
@@ -48,7 +48,7 @@ export default async function ObrigadoPage({
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-teal-600 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-teal-700"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 text-base font-semibold text-navy transition-colors hover:bg-gold-light"
           >
             Falar agora no WhatsApp
           </a>

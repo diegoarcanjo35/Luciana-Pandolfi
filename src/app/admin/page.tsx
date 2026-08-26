@@ -65,7 +65,7 @@ export default function AdminPage() {
           onSubmit={handleLogin}
           className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
-          <h1 className="font-serif-display text-xl font-semibold text-[#0b2436]">
+          <h1 className="font-serif-display text-xl font-semibold text-navy">
             Painel de leads
           </h1>
           <p className="mt-1 text-sm text-slate-500">Acesso restrito à equipe da Luciana.</p>
@@ -76,13 +76,13 @@ export default function AdminPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Senha"
-            className="mt-4 w-full rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+            className="mt-4 w-full rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-gold focus:ring-2 focus:ring-gold/20"
           />
           {loginError && <p className="mt-2 text-sm text-red-600">{loginError}</p>}
           <button
             type="submit"
             disabled={loginLoading}
-            className="mt-4 w-full rounded-lg bg-teal-600 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 disabled:opacity-60"
+            className="mt-4 w-full rounded-lg bg-navy px-4 py-3 text-base font-semibold text-gold-light transition-colors hover:bg-navy-light disabled:opacity-60"
           >
             {loginLoading ? "Entrando..." : "Entrar"}
           </button>
@@ -96,7 +96,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-serif-display text-2xl font-semibold text-[#0b2436]">
+            <h1 className="font-serif-display text-2xl font-semibold text-navy">
               Leads recebidos
             </h1>
             <p className="text-sm text-slate-500">{leads.length} registro(s) · mais recentes primeiro</p>
@@ -145,7 +145,7 @@ export default function AdminPage() {
                   <td className="whitespace-nowrap px-4 py-3 text-slate-500">
                     {new Date(lead.created_at + "Z").toLocaleString("pt-BR")}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium text-[#0b2436]">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-navy">
                     {lead.nome}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">{lead.whatsapp}</td>

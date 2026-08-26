@@ -92,10 +92,10 @@ export default function LeadFormQualificacao({
   }
 
   const selectClass =
-    "rounded-lg border border-slate-300 bg-white px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100";
+    "rounded-lg border border-navy/20 bg-white px-4 py-3 text-base text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20";
   const inputClass =
-    "rounded-lg border border-slate-300 px-4 py-3 text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100";
-  const labelClass = "text-sm font-medium text-slate-700";
+    "rounded-lg border border-navy/20 px-4 py-3 text-base text-navy outline-none focus:border-gold focus:ring-2 focus:ring-gold/20";
+  const labelClass = "text-sm font-medium text-navy/80";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -248,7 +248,7 @@ export default function LeadFormQualificacao({
 
       <div className="flex flex-col gap-1">
         <label htmlFor="q-hospital" className={labelClass}>
-          Algum hospital específico? <span className="font-normal text-slate-400">(opcional)</span>
+          Algum hospital específico? <span className="font-normal text-navy/40">(opcional)</span>
         </label>
         <input
           id="q-hospital"
@@ -265,7 +265,7 @@ export default function LeadFormQualificacao({
       <button
         type="submit"
         disabled={loading}
-        className="mt-1 rounded-lg bg-teal-600 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-teal-700 disabled:opacity-60"
+        className="mt-1 rounded-lg bg-gold px-6 py-3.5 text-base font-semibold text-navy transition-colors hover:bg-gold-light disabled:opacity-60"
       >
         {loading ? "Enviando..." : ctaLabel}
       </button>

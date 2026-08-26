@@ -31,16 +31,16 @@ const FAQ_ITEMS = [
 
 export default function FAQAccordion() {
   return (
-    <div className="mx-auto flex max-w-3xl flex-col divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+    <div className="mx-auto flex max-w-3xl flex-col divide-y divide-navy/10 rounded-2xl border border-navy/10 bg-white shadow-sm">
       {FAQ_ITEMS.map((item) => (
-        <details key={item.q} className="group p-5 open:bg-slate-50/60">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-[#0b2436]">
+        <details key={item.q} className="group p-5 open:bg-cream/60">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-navy">
             {item.q}
-            <span className="shrink-0 text-teal-600 transition-transform group-open:rotate-45">
+            <span className="shrink-0 text-gold-dark transition-transform group-open:rotate-45">
               +
             </span>
           </summary>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.a}</p>
+          <p className="mt-3 text-sm leading-relaxed text-navy/60">{item.a}</p>
         </details>
       ))}
     </div>

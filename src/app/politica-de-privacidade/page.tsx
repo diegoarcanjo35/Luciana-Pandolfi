@@ -12,12 +12,12 @@ export default function PoliticaDePrivacidadePage() {
       <Header />
       <main className="flex-1 px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-2xl">
-          <h1 className="font-serif-display text-2xl font-semibold text-[#0b2436] sm:text-3xl">
+          <h1 className="font-serif-display text-2xl font-semibold text-navy sm:text-3xl">
             Política de Privacidade
           </h1>
-          <p className="mt-2 text-sm text-slate-500">Última atualização: 26 de agosto de 2026.</p>
+          <p className="mt-2 text-sm text-navy/50">Última atualização: 26 de agosto de 2026.</p>
 
-          <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-slate-600">
+          <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-navy/65">
             <p>
               Esta política explica como a <strong>L&amp;J Consultoria e Negócios Ltda</strong> ("nós"),
               responsável pelo site e pela consultoria em planos de saúde da Luciana Pandolfi, trata os
@@ -26,7 +26,7 @@ export default function PoliticaDePrivacidadePage() {
             </p>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Quais dados coletamos</h2>
+              <h2 className="font-semibold text-navy">Quais dados coletamos</h2>
               <p className="mt-2">
                 Nome, WhatsApp e e-mail, informados voluntariamente nos formulários do site. Nos
                 formulários de análise completa, também coletamos: se a consulta é para você, sua
@@ -39,7 +39,7 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Para que usamos esses dados</h2>
+              <h2 className="font-semibold text-navy">Para que usamos esses dados</h2>
               <p className="mt-2">
                 Exclusivamente para entrar em contato com você sobre a consultoria de planos de saúde:
                 enviar a análise comparativa solicitada, o guia gratuito de hospitais de referência, e
@@ -49,7 +49,7 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Com quem compartilhamos</h2>
+              <h2 className="font-semibold text-navy">Com quem compartilhamos</h2>
               <p className="mt-2">
                 Não vendemos nem compartilhamos seus dados com terceiros para fins de marketing de outras
                 empresas. Seus dados podem ser processados por prestadores de infraestrutura técnica (como
@@ -58,7 +58,7 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Cookies e mensuração</h2>
+              <h2 className="font-semibold text-navy">Cookies e mensuração</h2>
               <p className="mt-2">
                 Usamos cookies e parâmetros de URL (UTM) para entender de onde vêm nossos visitantes e
                 medir a eficácia de campanhas de anúncio. Você pode gerenciar cookies nas configurações do
@@ -67,7 +67,7 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Seus direitos</h2>
+              <h2 className="font-semibold text-navy">Seus direitos</h2>
               <p className="mt-2">
                 Você pode solicitar a qualquer momento a confirmação, o acesso, a correção ou a exclusão
                 dos seus dados pessoais, entrando em contato pelo WhatsApp informado no site.
@@ -75,7 +75,7 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
-              <h2 className="font-semibold text-[#0b2436]">Contato</h2>
+              <h2 className="font-semibold text-navy">Contato</h2>
               <p className="mt-2">
                 Dúvidas sobre esta política ou sobre o tratamento dos seus dados podem ser enviadas pelo
                 WhatsApp de atendimento disponível em todas as páginas do site.
