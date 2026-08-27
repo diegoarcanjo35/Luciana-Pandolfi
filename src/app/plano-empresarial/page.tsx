@@ -81,7 +81,7 @@ export default function PlanoEmpresarialPage() {
                 Quero minha análise empresarial
               </a>
               <p className="text-xs text-cream/45">
-                Resposta em até 1 hora útil · Atendimento em São Paulo e em todo o Brasil · Sem
+                Resposta em até 1 hora útil · Consultoria em São Paulo e em todo o Brasil · Sem
                 custo e sem compromisso
               </p>
             </div>
@@ -227,7 +227,7 @@ export default function PlanoEmpresarialPage() {
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
             <p className="eyebrow eyebrow-on-dark">Enquanto isso, um material gratuito</p>
             <h2 className="headline-editorial text-xl text-cream sm:text-2xl">
-              Hospitais de referência de São Paulo e quais planos dão acesso a cada um
+              Guia para avaliar hospitais e rede credenciada em São Paulo
             </h2>
             <p className="max-w-md text-sm leading-relaxed text-cream/65">
               Útil pra sua equipe avaliar a rede antes de decidir. Preencha abaixo e nossa equipe

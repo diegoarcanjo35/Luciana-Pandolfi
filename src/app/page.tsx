@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CredibilityBar from "@/components/CredibilityBar";
 import OperatorsList from "@/components/OperatorsList";
+import HospitalNetwork from "@/components/HospitalNetwork";
 import SocialProof from "@/components/SocialProof";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
@@ -54,7 +55,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-xs uppercase tracking-wide text-cream/40">
-                Consultoria independente · Sem custo para você · Atendimento SP e todo o Brasil
+                Consultoria independente · Sem custo para você · Atendimento em todo o Brasil
               </p>
             </div>
 
@@ -214,18 +215,20 @@ export default function HomePage() {
 
         <SocialProof />
 
+        <HospitalNetwork />
+
         {/* Isca de captura */}
         <section id="guia" className="bg-navy px-4 py-16 text-cream sm:px-6">
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
             <div>
               <p className="eyebrow eyebrow-on-dark">Material gratuito</p>
               <h2 className="mt-2 headline-editorial text-2xl text-cream sm:text-3xl">
-                Hospitais de referência de São Paulo e quais planos dão acesso a cada um
+                Como avaliar hospitais e rede credenciada antes de escolher seu plano
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-cream/70">
-                Se existe um hospital em que você quer ser atendido, é por ele que a escolha do
-                plano deveria começar — não pelo preço. Preencha ao lado e nossa equipe te envia
-                o guia completo pelo WhatsApp.
+                Preencha ao lado e nossa equipe te envia, pelo WhatsApp, um guia com o passo a
+                passo para conferir rede credenciada, carência e condições antes de assinar
+                qualquer contrato.
               </p>
             </div>
             <div className="rounded-2xl bg-cream p-6">

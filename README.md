@@ -6,6 +6,142 @@ deploy em Cloudflare Workers via OpenNext.
 Páginas: `/` (Home), `/quem-somos`, `/plano-empresarial` (campanha Alice/PME), `/plano-familiar`
 (campanha MedSênior/família), `/obrigado`, `/admin` (painel de leads), `/politica-de-privacidade`.
 
+## Branch `hospital-network-section` (27/08/2026)
+
+Ajuste pós-produção, partindo direto de `main` (que já está em produção desde `b79c3cd`) — não reutiliza
+a `premium-redesign`, que fica encerrada. Escopo: nova seção de rede hospitalar na Home + correções
+factuais pontuais encontradas na auditoria pós-deploy. Arquitetura, D1, Pixel/CAPI, painel `/admin`,
+UTMs e payload dos formulários **não foram tocados**.
+
+### Pedido da cliente (dois áudios, resumo)
+
+A cliente quer apresentar hospitais reconhecidos de São Paulo pra ilustrar a amplitude da análise de
+rede — sem afirmar que todo plano/operadora dá acesso a eles. Áudio 1: "como a gente trabalha com todas
+as operadoras, então a gente abrange todos os hospitais... Albert Einstein, Sírio, Rede D'Or São Luiz,
+Samaritano... é muito amplo". Áudio 2: pediu pra listar "só pra ilustrar": Albert Einstein, Rede D'Or São
+Luiz, Sírio, Beneficência Portuguesa, Samaritano e Santa Catarina — "mas nunca dizer que não atende nos
+outros".
+
+Instituições usadas (nomenclatura pública conferida via busca antes de escrever no site):
+- Hospital Israelita Albert Einstein
+- Hospital Sírio-Libanês
+- Rede D'Or São Luiz
+- Beneficência Portuguesa de São Paulo (nome institucional oficial: "BP — A Beneficência Portuguesa de
+  São Paulo"; mantive a forma como a cliente falou, mais legível numa lista)
+- Hospital Samaritano — **atenção**: hoje existem duas unidades com nomes distintos, Hospital Samaritano
+  Higienópolis e Hospital Samaritano Paulista (grupo Rede Américas). A cliente só disse "Samaritano", sem
+  especificar qual unidade. Mantive o nome genérico "Hospital Samaritano" no site para não escolher por
+  ela — **confirmar com a cliente se ela quer citar uma unidade específica ou manter genérico**.
+- Hospital Santa Catarina
+
+### Regra factual aplicada
+
+Nenhuma associação entre um hospital específico e uma operadora ou plano foi feita. Toda menção aos
+hospitais vem acompanhada do aviso: "A disponibilidade de cada hospital depende da operadora, do
+produto, da categoria contratada e da rede credenciada vigente. A inclusão é confirmada individualmente
+durante a análise." Nada de "rede completa", "acesso garantido" ou hospital citado como parceiro.
+
+### Nova seção — Home (`src/components/HospitalNetwork.tsx`)
+
+Composição editorial (não catálogo): título + texto institucional + CTA à esquerda, lista numerada
+(`.numeral`, mesmo padrão tipográfico da seção "Como conduzimos a análise") com aviso de disponibilidade
+à direita. Sem fotos, sem logos — nenhum asset de hospital foi fornecido pela cliente ou tem procedência
+verificada, então a primeira versão é só tipografia, como o briefing pediu como alternativa preferida.
+CTA "Analisar minha rede hospitalar" leva para `#simulacao` (formulário principal já existente da Home —
+nenhum formulário novo foi criado).
+
+Posicionada entre `SocialProof` e a seção de isca (`#guia`), para que o guia gratuito de hospitais leia
+como continuação natural, não repetição — por isso o corpo de texto da seção `#guia` também mudou (não
+duplica mais "comece pelo hospital que você quer", já dito na nova seção).
+
+### MedSênior e Alice — revisão, sem novo conteúdo
+
+Ambas as landing pages já tratavam rede hospitalar de forma segura antes deste ajuste: `/plano-familiar`
+já tinha o card "Rede credenciada" com texto condicional ("verificamos se os hospitais que importam para
+a sua família estão realmente cobertos"), sem nomear hospitais nem prometer cobertura; `/plano-empresarial`
+já listava "Rede hospitalar prioritária" como um dos fatores analisados, também sem nomear instituições.
+Nenhuma das duas foi alterada — replicar a seção da Home ali reintroduziria o risco que o briefing pediu
+para evitar (parecer catálogo, tirar o formulário da primeira dobra, prejudicar o message match do
+anúncio).
+
+### Correção — "Atendimento em todo o Brasil"
+
+A cliente não confirmou explicitamente nesta conversa se a frase se refere ao alcance comercial da
+consultoria (atendimento remoto via WhatsApp/telefone) ou à cobertura de rede dos planos. Como a segunda
+leitura seria uma alegação de cobertura que não é possível garantir, apliquei a leitura mais segura —
+diferenciar consultoria de cobertura de plano — nos 4 pontos onde a frase aparecia:
+- Home (hero): "Atendimento em todo o Brasil" mantido, mas removida a referência solta a "SP e" que
+  soava como alegação de cobertura de rede.
+- `/plano-familiar` e `/plano-empresarial` (hero): "Atendimento" → "Consultoria" (deixa explícito que é o
+  serviço de consultoria, não a rede do plano).
+- `FAQAccordion.tsx` (pergunta "Vocês atendem fora de São Paulo?"): resposta expandida para diferenciar
+  explicitamente — "a consultoria atende todo o Brasil por telefone e WhatsApp... a rede credenciada e a
+  abrangência de cada plano variam conforme produto, operadora e região."
+- `Footer.tsx`: **não precisou de correção** — já estava com o sujeito correto ("Consultoria gratuita e
+  independente... São Paulo/SP e todo o Brasil").
+
+A auditoria original também citava `/quem-somos` como um dos locais com essa frase — conferi e ela não
+aparece nessa página; correção de premissa, não de código.
+
+**Ainda pendente**: confirmação explícita da cliente sobre a natureza exata dessa alegação (só reforça a
+formulação já segura que ficou no ar).
+
+### Correção — texto de privacidade nos formulários
+
+`LeadFormIsca.tsx`: "Seus dados não são compartilhados com terceiros" (que conflitava com a Política de
+Privacidade completa, que já detalha Cloudflare/Meta/CAPI) → "Seus dados não são vendidos e são tratados
+conforme nossa Política de Privacidade", com link para `/politica-de-privacidade`. Único ponto do site
+com essa frase — não havia duplicata em `LeadFormQualificacao.tsx`.
+
+### Correção — promessa do guia gratuito
+
+Título "Hospitais de referência de São Paulo e quais planos dão acesso a cada um" (nas 3 páginas que
+oferecem o guia — Home, `/plano-familiar`, `/plano-empresarial`) sugeria um mapeamento definitivo por
+plano, que o guia não tem. Trocado por "Como avaliar hospitais e rede credenciada antes de escolher seu
+plano" (Home) e "Guia para avaliar hospitais e rede credenciada em São Paulo" (landings) — mesma ideia,
+sem prometer uma tabela hospital-por-plano que não existe.
+
+### Alegações revisadas (item 11 do briefing)
+
+| Alegação | Classificação | Onde |
+|---|---|---|
+| "Todas as principais operadoras" / "acesso direto às principais operadoras" | Confirmada pela cliente (lista de 17 operadoras, rodada anterior) | Home |
+| "6 anos de mercado" | Confirmada pela cliente | Home |
+| SLA "1 hora útil" | Confirmada pela cliente | Home, MedSênior, Alice, `/obrigado` |
+| "Rede de hospitais de referência de São Paulo" (teaser Quem somos na Home) | Formulação institucional segura — não promete cobertura, descreve foco de atuação | Home |
+| "Atendimento em todo o Brasil" | Ambígua sem confirmação explícita — aplicada leitura segura (ver acima) | Home, MedSênior, Alice, FAQ |
+| "Hospitais de referência... e quais planos dão acesso a cada um" (guia) | Exagerada — corrigida nesta rodada | Home, MedSênior, Alice |
+| "Seus dados não são compartilhados com terceiros" (isca) | Ambígua/imprecisa frente à política completa — corrigida nesta rodada | Home, MedSênior, Alice |
+| Nomes dos 6 hospitais na nova seção | Confirmados pela cliente (transcrição dos áudios) — nomenclatura pública conferida por busca | Home |
+
+### O que foi testado nesta rodada
+
+- `npm run lint`: sem erros/warnings novos nos arquivos alterados.
+- `npm run build`: sucesso, 16 rotas.
+- `npx opennextjs-cloudflare build`: sucesso, `.open-next/worker.js` gerado.
+- Verificação visual via dev server local (desktop) da Home, incluindo a nova seção e o guia
+  reposicionado/reescrito.
+- **Não testado nesta rodada**: viewport mobile real (mesma limitação de ferramenta já registrada na
+  rodada anterior — a emulação de viewport não alterou `window.innerWidth` neste ambiente); pipeline de
+  formulário → D1 → admin (não reenviado, para não gerar lead de teste desnecessário — os componentes de
+  formulário não foram alterados nesta rodada, só a legenda de texto abaixo deles); Pixel/CAPI no
+  Gerenciador de Eventos.
+
+### Arquivos alterados nesta branch
+
+`src/app/page.tsx`, `src/components/HospitalNetwork.tsx` (novo), `src/components/LeadFormIsca.tsx`,
+`src/components/FAQAccordion.tsx`, `src/app/plano-familiar/page.tsx`, `src/app/plano-empresarial/page.tsx`.
+
+### Pendências
+
+- Confirmar com a cliente se "Hospital Samaritano" deve especificar Higienópolis, Paulista, ou ficar
+  genérico.
+- Confirmar a natureza exata de "atendimento em todo o Brasil" (comercial vs. cobertura de rede).
+- Fotografias/logos dos hospitais: **sem autorização, não usados**. Se a cliente quiser adicionar depois,
+  precisa fornecer os arquivos com procedência conhecida (não pesquisar e publicar imagem da internet).
+- Mesmas pendências já registradas nas rodadas anteriores (número de famílias/empresas atendidas, domínio
+  próprio).
+
 ## Branch `premium-redesign` (26/08/2026)
 
 Reformulação de direção premium sobre a base já validada — arquitetura, D1, admin, Pixel/CAPI, dedup
