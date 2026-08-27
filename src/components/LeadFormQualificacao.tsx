@@ -15,12 +15,14 @@ export default function LeadFormQualificacao({
   showNumeroVidas = false,
   paraQuemOrder,
   ctaLabel = "Solicitar minha análise gratuita",
+  promotionSlug,
 }: {
   sourcePage: string;
   campaign?: string;
   showNumeroVidas?: boolean;
   paraQuemOrder?: string[];
   ctaLabel?: string;
+  promotionSlug?: string;
 }) {
   const router = useRouter();
   const options = paraQuemOrder ?? PARA_QUEM_OPTIONS;
@@ -76,6 +78,7 @@ export default function LeadFormQualificacao({
           hospital_especifico: hospital || null,
           numero_vidas: showNumeroVidas ? numeroVidas : null,
           event_id: eventId,
+          promotion_slug: promotionSlug ?? null,
           ...utm,
         }),
       });

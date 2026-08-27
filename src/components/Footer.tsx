@@ -13,7 +13,7 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
         <p className="font-serif-display text-base text-cream">L&amp;J Consultoria | Planos de Saúde</p>
         <p className="text-xs text-cream/50">Luciana Pandolfi &amp; Jhonatan</p>
         <p>
-          Consultoria gratuita e independente em planos de saúde · São Paulo/SP e todo o Brasil
+          Consultoria gratuita e independente em planos de saúde · São Paulo/SP
         </p>
         {/* Registro profissional: removido da versão pública até a cliente confirmar o número
             real e o órgão correto (não necessariamente SUSEP para esta atividade). Ver README —

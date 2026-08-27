@@ -94,7 +94,7 @@ export default function PlanoFamiliarPage() {
                 Quero minha análise gratuita
               </a>
               <p className="mt-4 text-xs text-navy/45">
-                Resposta em até 1 hora útil · Consultoria em São Paulo e em todo o Brasil · Sem
+                Resposta em até 1 hora útil · Consultoria por telefone e WhatsApp · Sem
                 custo e sem compromisso
               </p>
             </div>

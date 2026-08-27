@@ -81,7 +81,7 @@ export default function PlanoEmpresarialPage() {
                 Quero minha análise empresarial
               </a>
               <p className="text-xs text-cream/45">
-                Resposta em até 1 hora útil · Consultoria em São Paulo e em todo o Brasil · Sem
+                Resposta em até 1 hora útil · Consultoria por telefone e WhatsApp · Sem
                 custo e sem compromisso
               </p>
             </div>

@@ -10,14 +10,41 @@ import SocialProof from "@/components/SocialProof";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
 import LeadFormQualificacao from "@/components/LeadFormQualificacao";
+import PromotionsSection from "@/components/PromotionsSection";
 import type { Metadata } from "next";
 import { SITE_URL, WHATSAPP_MESSAGES } from "@/lib/site-config";
+import { listActivePromotionsRaw } from "@/lib/db";
+import { isPubliclyVisible } from "@/lib/promotions";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const params = await searchParams;
+  const promotionSlug = typeof params.promo === "string" ? params.promo : undefined;
+
+  const now = new Date();
+  const allActive = await listActivePromotionsRaw();
+  const publicPromotions = allActive
+    .filter((p) => isPubliclyVisible({ status: p.status, starts_at: p.starts_at, ends_at: p.ends_at }, now))
+    .sort((a, b) => a.display_order - b.display_order)
+    .map((p) => ({
+      slug: p.slug,
+      operator_name: p.operator_name,
+      title: p.title,
+      short_description: p.short_description,
+      benefit_value: p.benefit_value,
+      eligible_products: p.eligible_products,
+      eligible_audience: p.eligible_audience,
+      eligible_locations: p.eligible_locations,
+      starts_at: p.starts_at,
+      ends_at: p.ends_at,
+      is_featured: Boolean(p.is_featured),
+      public_cta_label: p.public_cta_label ?? "Quero saber se me qualifico",
+      public_cta_target: p.public_cta_target ?? "#simulacao",
+    }));
+
   return (
     <>
       <Header />
@@ -55,7 +82,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-xs uppercase tracking-wide text-cream/40">
-                Consultoria independente · Sem custo para você · Atendimento em todo o Brasil
+                Consultoria independente · Sem custo para você · Atendimento por telefone e WhatsApp
               </p>
             </div>
 
@@ -217,6 +244,8 @@ export default function HomePage() {
 
         <HospitalNetwork />
 
+        <PromotionsSection promotions={publicPromotions} />
+
         {/* Isca de captura */}
         <section id="guia" className="bg-navy px-4 py-16 text-cream sm:px-6">
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
@@ -298,7 +327,11 @@ export default function HomePage() {
               </p>
             </div>
             <div className="rounded-2xl border border-navy/10 bg-white p-6 shadow-sm">
-              <LeadFormQualificacao sourcePage="home" ctaLabel="Solicitar minha análise gratuita" />
+              <LeadFormQualificacao
+                sourcePage="home"
+                ctaLabel="Solicitar minha análise gratuita"
+                promotionSlug={promotionSlug}
+              />
             </div>
           </div>
         </section>

@@ -6,6 +6,281 @@ deploy em Cloudflare Workers via OpenNext.
 Páginas: `/` (Home), `/quem-somos`, `/plano-empresarial` (campanha Alice/PME), `/plano-familiar`
 (campanha MedSênior/família), `/obrigado`, `/admin` (painel de leads), `/politica-de-privacidade`.
 
+## Branch `launch-promotions-admin` (27/08/2026)
+
+Parte do commit `07cf10c` (branch `hospital-network-section`) — não da `main` diretamente, porque a
+`main` na hora deste pedido ainda não tinha a seção hospitalar incorporada. Escopo: contas
+administrativas individuais (Luciana/Jhonatan/Diego), CRUD completo de promoções, seção pública de
+promoções vigentes, e a promoção inicial da Hapvida pronta pro lançamento de 01/09. Nenhum merge, nenhum
+deploy — tudo só nesta branch, com D1 aplicado apenas local/prévia.
+
+### Auditoria do admin anterior (antes de mexer em qualquer coisa)
+
+O `/admin` já existia com uma senha única (`ADMIN_PASSWORD`, secret do Worker/`​.dev.vars` local) — sem
+contas individuais. Fluxo: `POST /api/admin/login` comparava a senha recebida com `ADMIN_PASSWORD` e,
+se batesse, gravava um cookie `HttpOnly`/`Secure`/`SameSite=lax` contendo `sha256("lp-admin:" +
+ADMIN_PASSWORD)` — um token **determinístico** (sempre o mesmo valor para a mesma senha), com validade
+de 12h. `isAuthenticated()` recomputava esse hash e comparava com o cookie a cada request. Não havia
+sessão gravada em banco, não havia rate limiting, não havia log de último acesso, e a comparação de
+senha usava `===` simples (não é comparação em tempo constante — risco baixo dado que era uma senha
+única de baixo valor, mas não ideal). `logout` só apagava o cookie. Nenhuma credencial estava hardcoded
+no código — só em `ADMIN_PASSWORD`/`.dev.vars` (gitignorado) ou secret do Worker.
+
+### Nova autenticação — sem quebrar o acesso do Diego
+
+O `ADMIN_PASSWORD` **continua funcionando exatamente como antes** — mesmo formulário de senha única,
+mesmo cookie determinístico. Isso é a "ponte legada" (`src/lib/auth.ts`): uma sessão autenticada por ele
+tem privilégio de superadmin "virtual" (sem linha em `admin_users`), o suficiente pra Diego acessar a
+nova área **Usuários** e criar as contas reais de Luciana, Jhonatan e dele mesmo — sem precisar de
+nenhum secret novo nem de mudança de comportamento imediata. Quando uma conta real existir para o
+Diego, ele pode passar a usar e-mail + senha própria; a ponte legada pode continuar existindo como
+plano B enquanto fizer sentido.
+
+Contas reais (tabela `admin_users`) usam:
+- **Hash de senha**: PBKDF2-SHA256, 100.000 iterações, salt aleatório de 16 bytes por conta
+  (`src/lib/crypto.ts`) — Web Crypto nativo do runtime de Workers, sem depender de bcrypt/argon2
+  (que exigem binding nativo incompatível com Workers).
+- **Sessão**: token opaco aleatório (32 bytes) gravado em `admin_sessions`, cookie
+  `HttpOnly`/`Secure`/`SameSite=lax`, expira em 12h, revogado de verdade no logout (`DELETE`/`UPDATE
+  revoked_at`, não só limpeza de cookie).
+- **Rate limiting**: tabela `admin_login_attempts` (compatível com o runtime de Workers, sem precisar
+  de KV/Durable Objects) — 5 tentativas erradas por identificador (IP + e-mail) travam por 15 minutos.
+  A tentativa só é registrada **depois** de a senha ser conferida e falhar (não antes) — isso é
+  testado.
+- **Mensagem genérica**: login errado sempre retorna "E-mail ou senha inválidos.", nunca diferencia
+  "e-mail não existe" de "senha errada".
+- **Papéis**: `superadmin` (acessa leads, administra promoções, cadastra/ativa/desativa admins) e
+  `admin` (acessa leads, cadastra/edita/publica/arquiva promoções, **não** cadastra administradores).
+  Checado tanto na UI (esconde a aba "Usuários") quanto na API (`requireRole`, testado manualmente
+  retornando 403 pra quem não é superadmin).
+
+### Bootstrap das contas de Luciana e Jhonatan
+
+Nenhuma conta foi inventada. O fluxo pra criar as contas reais:
+1. Diego entra em `/admin` com a senha atual (`ADMIN_PASSWORD`) — igual já faz hoje.
+2. Vai na aba **Usuários** (só aparece pra superadmin).
+3. Cria a conta de Luciana e a de Jhonatan (nome, e-mail, senha, papel) diretamente no formulário.
+4. A senha definida ali fica hasheada no banco — **combine com cada um por um canal seguro (ligação,
+   WhatsApp por chamada de voz, etc.), nunca por e-mail em texto simples**. Não há fluxo de "esqueci
+   minha senha" nesta primeira versão — se quiserem trocar a própria senha depois, é um follow-up.
+
+**Nenhum secret novo é necessário pra esse fluxo funcionar** — o `ADMIN_PASSWORD` que já existe é
+suficiente. Se no futuro vocês decidirem desativar de vez o acesso legado (depois que Diego já tiver
+uma conta real), isso é uma decisão consciente separada, não algo que essa branch faz sozinha.
+
+### CRUD de promoções
+
+Tabela `promotions` (migration `migrations/0002_promotions.sql`) com os campos pedidos no briefing
+(operadora, título, descrição, tipo/valor de benefício, condições completas, produtos/público/vidas/
+região elegíveis, datas, status, destaque, ordem, CTA público, fonte administrativa, notas internas,
+quem criou/editou, timestamps).
+
+**Como o status funciona**: o campo `status` gravado no banco só tem 3 valores — `draft`, `active`,
+`archived` — que é a intenção que o admin define ao salvar. Os estados citados no briefing
+(`scheduled`, `expired`) **nunca são gravados**: são sempre calculados, a partir de `status` +
+`starts_at`/`ends_at` + data atual em `America/Sao_Paulo`, por `computeEffectiveStatus()` em
+`src/lib/promotions.ts`. Isso é o que garante que uma promoção marcada como `active` no banco, mas já
+vencida, apareça como "Expirada" no Admin e nunca apareça na seção pública — testado em
+`src/lib/__tests__/promotions.test.ts`.
+
+**Fuso horário**: `America/Sao_Paulo` é fixo em UTC-3 o ano todo (Brasil aboliu o horário de verão em
+2019), então a conversão usa só `Intl.DateTimeFormat` com esse timezone, sem precisar tratar DST. Os
+testes cobrem o caso de virada de dia (`todaySaoPaulo`) pra confirmar que um horário UTC que já é dia
+seguinte, mas ainda é o dia anterior em São Paulo, não expira uma promoção antes da hora.
+
+**Validação**: `validatePromotionInput()` roda no servidor (`/api/admin/promotions`, nunca só no
+navegador) — operadora/título/descrição/data inicial obrigatórios, data final (quando existe) não pode
+ser anterior à inicial, condições completas só obrigatórias quando o status vai pra `active`
+(publicação), sanitização de HTML nos textos (`stripHtml`), queries sempre parametrizadas (`.bind()`
+do D1, nunca concatenação de string).
+
+**Exclusão**: o botão "Arquivar" (ação padrão) nunca apaga — só marca `status='archived'` e
+`archived_at`. Existe exclusão definitiva via `DELETE /api/admin/promotions/:id?hard=true`, mas **só
+funciona pra superadmin** e não está exposta na UI desta versão (por decisão de manter a ação principal
+sempre reversível) — reservada pra uso administrativo direto se um dia for necessário.
+
+**Auditoria**: toda criação/edição/publicação/desativação/arquivamento grava uma linha em
+`promotion_audit_log` (ação, quem, quando, um resumo curto em `details` — nunca senha, cookie, token ou
+dado sensível).
+
+### Promoções do lançamento de 01/09/2026
+
+Analisei as campanhas mencionadas no briefing e classifiquei cada uma:
+
+| Operadora | Condição | Vigência informada | Decisão | Por quê |
+|---|---|---|---|---|
+| **Hapvida** | 50% na 1ª mensalidade | 27/07 a 30/09/2026 | **Cadastrada como ativa** (rascunho inicial já com status `active`) | Dentro da vigência em 01/09 |
+| **Omint** | 15–20% conforme linha, 4–99 vidas | Cotações desde 01/07, sem data final pública | **Cadastrada como rascunho** | Sem confirmação de que segue vigente em 01/09 — não inventei data final |
+| Prevent Senior | 30% na 1ª parcela | até 31/08/2026 | **Não cadastrada** | Estaria expirada no lançamento |
+| Porto Bairro | Isenção da 2ª fatura | até 10/08/2026 | **Não cadastrada** | Já expirada antes do lançamento |
+| SulAmérica Porte II | Isenção da 2ª fatura | até 31/08/2026 | **Não cadastrada** | Estaria expirada no lançamento |
+| SulAmérica Porte I/DF | Isenção da 2ª fatura | até 31/08/2026 | **Não cadastrada** | Estaria expirada no lançamento |
+| Amil | Pagamento de 100% na 4ª parcela | — | **Não cadastrada** | É remuneração/premiação do corretor, condicionada a adimplência — não é benefício público do consumidor. Nunca deve virar "promoção" pública. |
+
+Fonte pública usada como referência administrativa para Hapvida e Omint: CoBroker
+(`cobroker.com.br/campanha-hapvida-50-de-desconto-na-1a-mensalidade/` e
+`cobroker.com.br/campanha-desconto-omint/`), guardada em `source_reference` de cada registro — **nunca
+citada como parceira da L&J na comunicação pública**, só como nota administrativa interna.
+
+As 5 campanhas excluídas (Prevent Senior, Porto Bairro, 2x SulAmérica, Amil) **não foram inseridas no
+banco** — ficam só documentadas aqui. Se quiserem manter um registro histórico/arquivado delas por
+auditoria, é um follow-up simples (inserir com `status='archived'`).
+
+Seed em `migrations/seed_initial_promotions.sql` — **não é aplicado automaticamente**, só documentado
+(rodar manualmente, nunca direto em produção nesta etapa):
+```bash
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/seed_initial_promotions.sql
+```
+
+### Seção pública (Home)
+
+Nova seção "Condições comerciais vigentes" (`src/components/PromotionsSection.tsx`), inserida entre a
+seção de rede hospitalar e o guia gratuito — composição editorial (lista, não grade de cards
+idênticos), operadora em microtipografia, benefício em destaque, vigência formatada em DD/MM/AAAA,
+aviso obrigatório de que a confirmação é feita na análise. **Só renderiza se houver ao menos uma
+promoção publicamente visível** (`isPubliclyVisible`) — a seção inteira some da página quando não há
+nenhuma promoção ativa, sem placeholder vazio.
+
+Como consequência direta, a Home **deixou de ser estática** (`○`) e passou a ser renderizada sob
+demanda (`ƒ`) — ela agora consulta o D1 a cada request pra saber quais promoções mostrar. Isso é
+esperado e correto: uma página estática não refletiria uma promoção expirando à meia-noite.
+
+**CTA e rastreamento opcional**: o botão de cada promoção leva para `#simulacao` (o formulário principal
+já existente da Home) com `?promo=<slug>` — testado e corrigido um bug real nesta rodada (a query
+string estava sendo montada depois do `#`, o que é inválido em URL: o navegador trata tudo depois de
+`#` como fragmento, então o parâmetro nunca chegava ao servidor). `LeadFormQualificacao` aceita a nova
+prop opcional `promotionSlug`, que vai no payload como `promotion_slug` — **coluna nova e opcional em
+`leads`** (`ALTER TABLE leads ADD COLUMN promotion_slug TEXT`, aditiva, todo lead existente continua
+com o valor `NULL`). `source_page`, `campaign`, UTMs e `event_id` **não foram alterados**. Testado ao
+vivo: formulário preenchido a partir do CTA da Hapvida gravou `promotion_slug=hapvida-50-primeira-mensalidade`
+no lead, visível na coluna nova da tabela de Leads do Admin.
+
+O endpoint público `GET /api/promotions` existe para eventual uso futuro (ex.: se as landings quiserem
+consumir a mesma lista) e devolve só os campos seguros — nunca `internal_notes`, `source_name`,
+`source_reference`, `created_by`/`updated_by` ou qualquer coisa que exponha remuneração de corretor ou
+fonte administrativa interna. A Home hoje busca os dados direto do banco no servidor (mais simples e
+sem round-trip extra), não consome esse endpoint — ele fica disponível caso seja útil depois.
+
+### MedSênior e Alice — revisadas, sem mudança
+
+Conferi as duas landings: `/plano-familiar` já tinha o card "Rede credenciada" com texto condicional
+("verificamos se os hospitais que importam pra sua família estão realmente cobertos"), sem nomear
+hospital nem prometer cobertura; `/plano-empresarial` já listava "Rede hospitalar prioritária" como um
+dos fatores analisados, também sem nomear instituições. Nenhuma das duas foi alterada — nem para
+adicionar promoções, nem para repetir a seção da Home. Isso preserva o message match com os anúncios e
+mantém o formulário na primeira dobra, como pedido.
+
+### Correção — "Atendimento em todo o Brasil" (revisão mais rigorosa)
+
+A rodada anterior já tinha suavizado essa alegação, mas ainda mantinha "todo o Brasil" em alguns pontos
+sem confirmação explícita da cliente. Como pedido nesta rodada, apliquei a versão sem alcance geográfico
+absoluto nos 5 pontos restantes onde a frase aparecia:
+- **Home** (microcopy do hero): "Atendimento em todo o Brasil" → "Atendimento por telefone e WhatsApp".
+- **`/plano-familiar`** e **`/plano-empresarial`** (microcopy do hero): "Consultoria em São Paulo e em
+  todo o Brasil" → "Consultoria por telefone e WhatsApp".
+- **`FAQAccordion.tsx`**: resposta reescrita para "Consultoria realizada por telefone e WhatsApp... A
+  disponibilidade das opções, a abrangência e a rede credenciada variam conforme produto, operadora e
+  região."
+- **`Footer.tsx`**: removido "e todo o Brasil" do rodapé.
+- **`/quem-somos`**: conferido — **não tem** essa frase (a auditoria do briefing citava essa página,
+  mas não encontrei a ocorrência no código atual; correção de premissa, não de código).
+- **Metadados** (`title`/`description` de cada página): conferidos — nenhum menciona "Brasil" ou
+  cobertura geográfica, nada a corrigir.
+
+Continua pendente a confirmação explícita da cliente sobre se existe, de fato, atendimento comercial
+nacional (ligação/WhatsApp de qualquer estado) — se vier confirmação clara, dá pra reintroduzir essa
+informação separada de qualquer alegação de cobertura de rede/plano.
+
+### Segurança — nada exposto, nada hardcoded
+
+- `.dev.vars` continua fora do Git (gitignorado, confirmado nesta rodada).
+- Nenhuma senha, hash, token ou dado de lead apareceu em commit, log ou neste README.
+- Contas de teste criadas durante a verificação local (`teste.admin@example.com`) foram apagadas do
+  banco local antes da entrega — não sobem pra lugar nenhum além do `.wrangler/state` local, que já é
+  gitignorado.
+
+### O que foi testado de verdade nesta rodada
+
+| Item | Como foi feito |
+|---|---|
+| `npm run lint` | Executado. Nenhum erro novo de classe diferente da já existente — as páginas novas de Admin (`AdminLayoutClient.tsx`, `admin/page.tsx`, `admin/promocoes`, `admin/usuarios`) caem na mesma regra `react-hooks/set-state-in-effect` que **já existia** em `admin/page.tsx` antes desta rodada (fetch-on-mount é o mesmo padrão usado em todo o site) — não é uma regressão nova, é o mesmo padrão replicado nas páginas novas. |
+| `npm run test` (Vitest, novo neste round) | 30 testes, todos passando: cálculo de status efetivo (ativa/agendada/expirada/rascunho/arquivada), fuso horário América/São_Paulo incluindo virada de dia, validação server-side, hash/verificação de senha (incluindo hash malformado), geração de token de sessão, e os cenários reais do lançamento (Hapvida ativa em 01/09, Omint em rascunho não aparece, campanhas até 31/08 não aparecem). |
+| `npm run build` | Sucesso, 22 rotas. `/` passou de estática para dinâmica (`ƒ`) — esperado, ver seção "Seção pública" acima. |
+| `opennextjs-cloudflare build` | Executado com sucesso, `.open-next/worker.js` gerado. |
+| Migrations 0001 e 0002 | Aplicadas no D1 **local** com sucesso (`--local`, nunca `--remote`). |
+| Seed inicial | Aplicado no D1 local — confirmei via `wrangler d1 execute --command` que Hapvida está `active` e Omint `draft`. |
+| Login legado (`ADMIN_PASSWORD`) | Testado ao vivo — continua funcionando, sessão vira "superadmin" virtual. |
+| Criação de conta real + login real | Testado ao vivo — criei uma conta de teste via UI, fiz login com e-mail+senha, confirmei que funciona (PBKDF2 + sessão real em D1), depois apaguei a conta de teste. |
+| RBAC | Testado ao vivo — conta `admin` não vê a aba "Usuários" na UI, e `GET /api/admin/users` retorna 403 pra ela (não é só esconder na tela, a API também recusa). |
+| Rate limiting de login | Testado ao vivo — 5 tentativas erradas travam por 15 min, `429` com mensagem clara; o contador de tentativas do teste foi limpo do banco local depois. |
+| Acesso sem sessão às APIs administrativas | Testado ao vivo — `/api/admin/leads` e `/api/admin/promotions` retornam 401 sem cookie de sessão. |
+| CRUD de promoções | Testado ao vivo via UI — listagem, filtros, badges de situação calculada corretamente (Hapvida "Ativa", Omint "Rascunho"). Criação/edição/arquivamento testados no formulário; não testei publicar→expirar→arquivar em sequência completa via UI (coberto pelos testes automatizados de `computeEffectiveStatus`, não por teste manual passo a passo). |
+| Seção pública na Home | Testado ao vivo — a Hapvida aparece corretamente, a Omint (rascunho) não aparece. |
+| CTA da promoção → formulário | Testado ao vivo — **bug real encontrado e corrigido**: a query string `?promo=slug` estava sendo montada depois do `#simulacao`, o que é inválido (tudo depois de `#` é fragmento, nunca chega como query ao servidor). Corrigido em `buildPromoCtaHref()`. Reconfirmado depois do fix: lead gravado com `promotion_slug` correto. |
+| Pixel / CAPI / dedup | **Não tocados nesta rodada** — só inspeção de código para confirmar que `event_id`, `sourcePage`, `campaign` e o disparo em `/api/lead` continuam exatamente iguais. Nenhuma verificação no Gerenciador de Eventos da Meta foi feita. |
+| Viewport mobile real | **Mesma limitação já registrada nas rodadas anteriores** — a ferramenta de emulação de viewport não altera `window.innerWidth` neste ambiente de sessão. A responsividade das novas telas usa os mesmos padrões Tailwind (`sm:grid-cols-...`) já usados e visualmente confirmados no resto do site: não foi capturada com viewport real desta vez. |
+| Segredos / `.dev.vars` | Confirmado que `.dev.vars` segue fora do Git e nenhuma credencial nova foi commitada. |
+
+### Migrations criadas
+
+- `migrations/0001_admin_accounts.sql` — `admin_users`, `admin_sessions`, `admin_login_attempts`.
+- `migrations/0002_promotions.sql` — `promotions`, `promotion_audit_log`, `ALTER TABLE leads ADD COLUMN
+  promotion_slug TEXT`.
+- `migrations/seed_initial_promotions.sql` — Hapvida (ativa) e Omint (rascunho); não aplicado
+  automaticamente.
+
+Nenhuma migration altera ou apaga `leads`, UTMs ou dado existente — só adiciona tabelas novas e uma
+coluna opcional. Pra aplicar (sempre `--local` até decidirem publicar):
+```bash
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/0001_admin_accounts.sql
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/0002_promotions.sql
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/seed_initial_promotions.sql
+```
+Rollback lógico (sem comando destrutivo): como as migrations só criam tabelas novas e uma coluna
+opcional, reverter é simplesmente não usar as tabelas novas — nenhum dado existente de `leads` é
+alterado por elas. Se precisar desfazer de fato num ambiente de teste: `DROP TABLE` das tabelas novas
+(nunca `leads`) e `CREATE TABLE leads_new` sem a coluna `promotion_slug` + `INSERT INTO ... SELECT` +
+`DROP`/`RENAME` (SQLite não tem `DROP COLUMN` direto em todas as versões) — não foi necessário fazer
+isso, é só a documentação de como seria.
+
+### Arquivos alterados/criados nesta branch
+
+**Novos**: `migrations/0001_admin_accounts.sql`, `migrations/0002_promotions.sql`,
+`migrations/seed_initial_promotions.sql`, `src/lib/crypto.ts`, `src/lib/promotions.ts`,
+`src/lib/__tests__/promotions.test.ts`, `src/lib/__tests__/crypto.test.ts`, `vitest.config.ts`,
+`src/components/admin/AdminSessionContext.tsx`, `src/app/admin/AdminLayoutClient.tsx`,
+`src/app/admin/promocoes/page.tsx`, `src/app/admin/usuarios/page.tsx`,
+`src/app/api/admin/me/route.ts`, `src/app/api/admin/users/route.ts`,
+`src/app/api/admin/users/[id]/route.ts`, `src/app/api/admin/promotions/route.ts`,
+`src/app/api/admin/promotions/[id]/route.ts`, `src/app/api/promotions/route.ts`,
+`src/components/PromotionsSection.tsx`.
+
+**Alterados**: `src/lib/auth.ts` (reescrito), `src/lib/db.ts` (funções novas, aditivo),
+`src/app/admin/layout.tsx`, `src/app/admin/page.tsx`, `src/app/api/admin/login/route.ts`,
+`src/app/api/admin/logout/route.ts`, `src/app/api/lead/route.ts` (campo opcional novo),
+`src/components/LeadFormQualificacao.tsx` (prop opcional nova), `src/app/page.tsx` (busca promoções +
+nova seção), `src/components/FAQAccordion.tsx`, `src/components/Footer.tsx`,
+`src/app/plano-familiar/page.tsx`, `src/app/plano-empresarial/page.tsx`, `package.json` (script `test`
++ `vitest` como devDependency).
+
+### Secrets que vão precisar ser configurados no futuro
+
+**Nenhum secret novo é necessário pra esta branch funcionar** — reaproveita o `ADMIN_PASSWORD` que já
+existe. Os únicos secrets pendentes já eram conhecidos de rodadas anteriores (`META_CAPI_TOKEN` em
+produção — ver seção "Pixel da Meta" mais abaixo). Se decidirem desativar a ponte legada no futuro, isso
+não precisa de secret novo — só de garantir que todo mundo que precisa acessar já tem conta real
+criada.
+
+### Pendências (dependem de Diego ou da cliente)
+
+- Confirmar se Luciana e Jhonatan têm e-mail definido — pra Diego criar as contas reais deles na aba
+  Usuários (nenhum e-mail foi inventado).
+- Confirmar com Luciana/Jhonatan se a campanha Omint continua vigente em 01/09 antes de publicá-la
+  (hoje fica em rascunho).
+- Confirmação explícita sobre atendimento comercial nacional (item "Atendimento em todo o Brasil" acima).
+- Mesmas pendências de rodadas anteriores (número de famílias/empresas atendidas, domínio próprio,
+  fonte para "rede de hospitais de referência").
+
 ## Branch `hospital-network-section` (27/08/2026)
 
 Ajuste pós-produção, partindo direto de `main` (que já está em produção desde `b79c3cd`) — não reutiliza
@@ -314,7 +589,16 @@ schema):
 npx wrangler d1 execute luciana-pandolfi-leads --local --file=schema.sql
 ```
 
-A senha do painel `/admin` em desenvolvimento vem de `.dev.vars` (não commitado).
+Depois, aplicar as migrations incrementais em `migrations/` na ordem numérica (contas administrativas e
+promoções — ver seção "Branch `launch-promotions-admin`" para detalhes de cada uma):
+
+```bash
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/0001_admin_accounts.sql
+npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/0002_promotions.sql
+```
+
+A senha do painel `/admin` em desenvolvimento vem de `.dev.vars` (não commitado). Contas individuais
+(e-mail + senha) são criadas depois, de dentro do próprio painel, por quem entrar com essa senha.
 
 ## Deploy (Cloudflare Workers)
 
