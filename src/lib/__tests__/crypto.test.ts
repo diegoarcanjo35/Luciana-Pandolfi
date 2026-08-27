@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { hashPassword, verifyPassword, generateOpaqueToken } from "../crypto";
+import {
+  hashPassword,
+  verifyPassword,
+  generateOpaqueToken,
+  sha256Hex,
+  timingSafeEqualString,
+} from "../crypto";
 
 describe("hashPassword / verifyPassword", () => {
   it("verifica a senha correta", async () => {
@@ -31,5 +37,48 @@ describe("generateOpaqueToken", () => {
     const b = generateOpaqueToken();
     expect(a).not.toBe(b);
     expect(a).toHaveLength(64); // 32 bytes em hex
+  });
+});
+
+describe("sha256Hex — usado pra nunca gravar o token bruto de sessão no D1", () => {
+  it("é determinístico (mesmo texto -> mesmo hash)", async () => {
+    const a = await sha256Hex("um-token-de-sessao-qualquer");
+    const b = await sha256Hex("um-token-de-sessao-qualquer");
+    expect(a).toBe(b);
+  });
+
+  it("o hash nunca é igual ao texto original (o token bruto não aparece no valor gravado)", async () => {
+    const token = "meu-token-secreto-de-sessao";
+    const hash = await sha256Hex(token);
+    expect(hash).not.toBe(token);
+    expect(hash).toHaveLength(64);
+  });
+
+  it("textos diferentes produzem hashes diferentes", async () => {
+    const a = await sha256Hex("token-a");
+    const b = await sha256Hex("token-b");
+    expect(a).not.toBe(b);
+  });
+});
+
+describe("timingSafeEqualString", () => {
+  it("aceita strings iguais", () => {
+    expect(timingSafeEqualString("senha-correta", "senha-correta")).toBe(true);
+  });
+
+  it("rejeita strings diferentes do mesmo tamanho", () => {
+    expect(timingSafeEqualString("senha-correta", "senha-errada!")).toBe(false);
+  });
+
+  it("rejeita strings de tamanhos diferentes sem lançar exceção", () => {
+    expect(timingSafeEqualString("curta", "muito-mais-longa-que-a-primeira")).toBe(false);
+  });
+
+  it("rejeita string vazia contra não-vazia", () => {
+    expect(timingSafeEqualString("", "algo")).toBe(false);
+  });
+
+  it("aceita duas strings vazias", () => {
+    expect(timingSafeEqualString("", "")).toBe(true);
   });
 });

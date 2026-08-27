@@ -15,8 +15,11 @@ CREATE TABLE IF NOT EXISTS admin_users (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);
 
+-- token_hash guarda SHA-256(token) — nunca o token bruto. O cookie do navegador tem o
+-- token bruto; quem só tem leitura do banco não consegue reconstruir um cookie válido
+-- a partir do hash (ver src/lib/auth.ts).
 CREATE TABLE IF NOT EXISTS admin_sessions (
-  id TEXT PRIMARY KEY,
+  token_hash TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES admin_users(id),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   expires_at TEXT NOT NULL,

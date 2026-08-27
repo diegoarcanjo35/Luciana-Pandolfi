@@ -64,9 +64,40 @@ export interface PromotionInput {
   status?: string;
   minimum_lives?: number | null;
   maximum_lives?: number | null;
+  display_order?: number;
+  is_featured?: unknown;
+  public_cta_target?: string | null;
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_DISPLAY_ORDER = 10_000;
+
+/**
+ * Aceita só destinos internos: uma âncora ("#simulacao") ou um caminho interno
+ * começando com uma única barra ("/plano-familiar#simulacao"). Nunca um protocolo
+ * arbitrário (`javascript:`, `data:`), nem URL protocol-relative (`//dominio-externo`),
+ * nem domínio externo.
+ */
+export function isSafeCtaTarget(target: string): boolean {
+  if (typeof target !== "string" || target.length === 0) return false;
+  if (target.startsWith("#")) {
+    return /^#[a-zA-Z0-9_-]+$/.test(target);
+  }
+  if (target.startsWith("/") && !target.startsWith("//")) {
+    return /^\/[a-zA-Z0-9\-_/?=&.#]*$/.test(target);
+  }
+  return false;
+}
+
+/** Inteiro não negativo (0, 1, 2, ...) — usado pra vidas mínimas/máximas. */
+export function isNonNegativeInt(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+/** Inteiro dentro de uma faixa razoável de ordenação — evita valores absurdos. */
+export function isValidDisplayOrder(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= MAX_DISPLAY_ORDER;
+}
 
 /** Validação server-side — nunca confiar só na validação do navegador. */
 export function validatePromotionInput(
@@ -93,12 +124,31 @@ export function validatePromotionInput(
   ) {
     errors.push("Data final não pode ser anterior à data inicial.");
   }
+  if (input.minimum_lives != null && !isNonNegativeInt(input.minimum_lives)) {
+    errors.push("Número mínimo de vidas deve ser um inteiro não negativo.");
+  }
+  if (input.maximum_lives != null && !isNonNegativeInt(input.maximum_lives)) {
+    errors.push("Número máximo de vidas deve ser um inteiro não negativo.");
+  }
   if (
     input.minimum_lives != null &&
     input.maximum_lives != null &&
     input.minimum_lives > input.maximum_lives
   ) {
     errors.push("Número mínimo de vidas não pode ser maior que o máximo.");
+  }
+  if (input.display_order !== undefined && !isValidDisplayOrder(input.display_order)) {
+    errors.push("Ordem de exibição deve ser um inteiro entre 0 e 10000.");
+  }
+  if (input.is_featured !== undefined && typeof input.is_featured !== "boolean") {
+    errors.push("Destaque deve ser verdadeiro ou falso.");
+  }
+  if (
+    input.public_cta_target != null &&
+    input.public_cta_target !== "" &&
+    !isSafeCtaTarget(input.public_cta_target)
+  ) {
+    errors.push("Destino do CTA precisa ser uma âncora (#...) ou um caminho interno (/...).");
   }
   if (input.status && !["draft", "active", "archived"].includes(input.status)) {
     errors.push("Status inválido.");

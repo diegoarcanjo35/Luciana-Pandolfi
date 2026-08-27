@@ -14,6 +14,65 @@ administrativas individuais (Luciana/Jhonatan/Diego), CRUD completo de promoçõ
 promoções vigentes, e a promoção inicial da Hapvida pronta pro lançamento de 01/09. Nenhum merge, nenhum
 deploy — tudo só nesta branch, com D1 aplicado apenas local/prévia.
 
+### Correções da auditoria (27/08/2026, mesmo dia, mesma branch)
+
+Uma segunda auditoria sobre o commit `3afe20d` encontrou 9 bloqueadores funcionais e de segurança antes
+do merge. Todos foram corrigidos neste novo commit, na mesma branch. Resumo item por item:
+
+1. **Bug real: criar promoção já como ativa falhava.** O objeto usado pra validar o `POST` não incluía
+   `full_conditions`, então `validatePromotionInput(..., {forPublish:true})` rejeitava mesmo quando o
+   formulário enviava as condições completas. Corrigido em `src/app/api/admin/promotions/route.ts` —
+   `full_conditions` agora entra no objeto de validação. Testado ao vivo: criar uma promoção com
+   `status: "active"` e `full_conditions` preenchido agora retorna `200`, antes retornava `400` sempre.
+2. **Exclusão definitiva removida.** `deletePromotionPermanently` e o parâmetro `?hard=true` foram
+   removidos do código — o `DELETE` do painel **sempre arquiva**, nunca apaga. Isso também elimina o
+   risco de erro de chave estrangeira que existia (o audit log referenciava `promotion_id NOT NULL
+   REFERENCES promotions(id)` sem `ON DELETE CASCADE`; ao invés de corrigir a FK pra permitir apagar,
+   optamos por nunca apagar — mais simples e mais seguro).
+3. **Token de sessão passou a ser hasheado no D1.** A coluna (renomeada de `id` pra `token_hash` em
+   `migrations/0001_admin_accounts.sql`, que ainda não tinha sido aplicada em nenhum ambiente além do
+   D1 local) agora guarda `SHA-256(token)`. O cookie continua com o token bruto; quem só tem leitura do
+   banco não consegue reconstruir um cookie válido a partir do hash gravado. Testado ao vivo: após um
+   login real, conferi via `wrangler d1 execute` que `admin_sessions.token_hash` é um hash de 64
+   caracteres, não o valor do cookie.
+4. **Encerramento seguro do acesso legado.** Nova variável `LEGACY_ADMIN_ENABLED` (não é segredo — vai
+   em `[vars]` no `wrangler.toml`, default `"true"`). Só a string exata `"false"` desabilita — qualquer
+   outro valor, incluindo a variável não definida, mantém habilitado, pra nunca travar o Diego sem
+   querer. A comparação de senha do caminho legado agora usa `timingSafeEqualString` (tempo constante).
+   Testado ao vivo: com `LEGACY_ADMIN_ENABLED=false`, login com `ADMIN_PASSWORD` passou a retornar `401`
+   imediatamente; com a variável de volta ao padrão, voltou a funcionar. Sequência completa documentada
+   mais abaixo, seção "Ordem seguro para produção".
+5. **Proteção do último superadmin.** Nova função pura `canDeactivateUser` (`src/lib/admin-users.ts`) —
+   ninguém desativa a própria conta, e o último superadmin ativo nunca pode ser desativado (testado com
+   3 combinações diferentes ao vivo: outro ator com 2 superadmins ativos → permite; sessão legada
+   tentando desativar o único superadmin restante → bloqueia com 400 e mensagem clara).
+6. **Validação de campos administrativos reforçada.** `public_cta_target` agora só aceita âncoras
+   (`#simulacao`) ou caminhos internos (`/plano-familiar#simulacao`) — rejeita `javascript:`, `data:`,
+   domínio externo e URL protocol-relative (`//dominio`). `minimum_lives`/`maximum_lives` precisam ser
+   inteiros não negativos, `display_order` inteiro entre 0 e 10000, `is_featured` só booleano real,
+   status inválido retorna `400`. Campo obrigatório (`operator_name`, `title`, `short_description`,
+   `starts_at`) enviado como `null` ou vazio no `PATCH` agora retorna `400` **antes** de tocar o D1 — não
+   chega mais a virar um erro 500 por violar `NOT NULL`. IDs de rota são validados como inteiros
+   positivos (`/api/admin/promotions/abc` e `/api/admin/promotions/-1` retornam `400`, não `500`).
+7. **Alteração + auditoria atômicas.** `updatePromotionWithAudit` e `archivePromotionWithAudit`
+   (`src/lib/db.ts`) usam `db.batch([...])` do D1, que roda as statements numa única transação — ou as
+   duas são aplicadas, ou nenhuma é. Pra criação, `createPromotionWithAudit` resolve o `promotion_id` do
+   audit log por sub-select no `slug` (único), então não depende do `last_row_id` entre statements
+   separadas pra ser atômico.
+8. **Seed da Hapvida corrigido.** Removida a menção a "adesão" do público elegível — a fonte só confirma
+   Super Simples (1 e 2 a 29 vidas) e PME (30 a 99 vidas). Texto agora: "Super Simples de 1 a 29 vidas e
+   PME de 30 a 99 vidas, conforme elegibilidade e produto participante." `seed_initial_promotions.sql`
+   agora usa `INSERT OR IGNORE` sobre o `slug` (único) — rodar o arquivo mais de uma vez não duplica nem
+   quebra. Testado ao vivo: rodei o seed duas vezes seguidas, confirmei via SQL que continuam exatamente
+   2 linhas.
+9. **Home defensiva contra tabela ausente.** `src/app/page.tsx` e `src/app/api/promotions/route.ts`
+   agora envolvem a busca de promoções em `try/catch` — se a tabela não existir (migration não aplicada)
+   ou o D1 falhar por qualquer motivo, a seção de promoções simplesmente não aparece, o erro vai só pro
+   log do servidor (`console.error`), e o resto da Home renderiza normalmente. **Testado ao vivo**:
+   renomeei a tabela `promotions` temporariamente (`ALTER TABLE ... RENAME TO promotions_backup_temp`),
+   recarreguei a Home — carregou completa, sem a seção de promoções, erro apareceu só no overlay de
+   dev do Next.js (recurso só de desenvolvimento, não aparece em produção) — depois renomeei de volta.
+
 ### Auditoria do admin anterior (antes de mexer em qualquer coisa)
 
 O `/admin` já existia com uma senha única (`ADMIN_PASSWORD`, secret do Worker/`​.dev.vars` local) — sem
@@ -199,34 +258,100 @@ informação separada de qualquer alegação de cobertura de rede/plano.
   banco local antes da entrega — não sobem pra lugar nenhum além do `.wrangler/state` local, que já é
   gitignorado.
 
-### O que foi testado de verdade nesta rodada
+### O que foi testado de verdade (commit atual, já incluindo as correções da auditoria)
 
-| Item | Como foi feito |
-|---|---|
-| `npm run lint` | Executado. Nenhum erro novo de classe diferente da já existente — as páginas novas de Admin (`AdminLayoutClient.tsx`, `admin/page.tsx`, `admin/promocoes`, `admin/usuarios`) caem na mesma regra `react-hooks/set-state-in-effect` que **já existia** em `admin/page.tsx` antes desta rodada (fetch-on-mount é o mesmo padrão usado em todo o site) — não é uma regressão nova, é o mesmo padrão replicado nas páginas novas. |
-| `npm run test` (Vitest, novo neste round) | 30 testes, todos passando: cálculo de status efetivo (ativa/agendada/expirada/rascunho/arquivada), fuso horário América/São_Paulo incluindo virada de dia, validação server-side, hash/verificação de senha (incluindo hash malformado), geração de token de sessão, e os cenários reais do lançamento (Hapvida ativa em 01/09, Omint em rascunho não aparece, campanhas até 31/08 não aparecem). |
-| `npm run build` | Sucesso, 22 rotas. `/` passou de estática para dinâmica (`ƒ`) — esperado, ver seção "Seção pública" acima. |
-| `opennextjs-cloudflare build` | Executado com sucesso, `.open-next/worker.js` gerado. |
-| Migrations 0001 e 0002 | Aplicadas no D1 **local** com sucesso (`--local`, nunca `--remote`). |
-| Seed inicial | Aplicado no D1 local — confirmei via `wrangler d1 execute --command` que Hapvida está `active` e Omint `draft`. |
-| Login legado (`ADMIN_PASSWORD`) | Testado ao vivo — continua funcionando, sessão vira "superadmin" virtual. |
-| Criação de conta real + login real | Testado ao vivo — criei uma conta de teste via UI, fiz login com e-mail+senha, confirmei que funciona (PBKDF2 + sessão real em D1), depois apaguei a conta de teste. |
-| RBAC | Testado ao vivo — conta `admin` não vê a aba "Usuários" na UI, e `GET /api/admin/users` retorna 403 pra ela (não é só esconder na tela, a API também recusa). |
-| Rate limiting de login | Testado ao vivo — 5 tentativas erradas travam por 15 min, `429` com mensagem clara; o contador de tentativas do teste foi limpo do banco local depois. |
-| Acesso sem sessão às APIs administrativas | Testado ao vivo — `/api/admin/leads` e `/api/admin/promotions` retornam 401 sem cookie de sessão. |
-| CRUD de promoções | Testado ao vivo via UI — listagem, filtros, badges de situação calculada corretamente (Hapvida "Ativa", Omint "Rascunho"). Criação/edição/arquivamento testados no formulário; não testei publicar→expirar→arquivar em sequência completa via UI (coberto pelos testes automatizados de `computeEffectiveStatus`, não por teste manual passo a passo). |
-| Seção pública na Home | Testado ao vivo — a Hapvida aparece corretamente, a Omint (rascunho) não aparece. |
-| CTA da promoção → formulário | Testado ao vivo — **bug real encontrado e corrigido**: a query string `?promo=slug` estava sendo montada depois do `#simulacao`, o que é inválido (tudo depois de `#` é fragmento, nunca chega como query ao servidor). Corrigido em `buildPromoCtaHref()`. Reconfirmado depois do fix: lead gravado com `promotion_slug` correto. |
-| Pixel / CAPI / dedup | **Não tocados nesta rodada** — só inspeção de código para confirmar que `event_id`, `sourcePage`, `campaign` e o disparo em `/api/lead` continuam exatamente iguais. Nenhuma verificação no Gerenciador de Eventos da Meta foi feita. |
-| Viewport mobile real | **Mesma limitação já registrada nas rodadas anteriores** — a ferramenta de emulação de viewport não altera `window.innerWidth` neste ambiente de sessão. A responsividade das novas telas usa os mesmos padrões Tailwind (`sm:grid-cols-...`) já usados e visualmente confirmados no resto do site: não foi capturada com viewport real desta vez. |
-| Segredos / `.dev.vars` | Confirmado que `.dev.vars` segue fora do Git e nenhuma credencial nova foi commitada. |
+Diferenciando explicitamente o tipo de teste, como pedido:
+
+| Item | Tipo | Como foi feito |
+|---|---|---|
+| `npm run lint` | Automatizado | Executado. Nenhum erro novo de classe diferente da já existente — as páginas de Admin caem na mesma regra `react-hooks/set-state-in-effect` que **já existia** em `admin/page.tsx` antes desta branch (mesmo padrão de fetch-on-mount usado em todo o site). |
+| `npm run test` (Vitest) | Automatizado | **74 testes**, todos passando: status efetivo por data (ativa/agendada/expirada/rascunho/arquivada), fuso horário América/São_Paulo com virada de dia, validação server-side (incluindo os novos validadores de CTA/inteiros/booleano), hash de senha (PBKDF2) e hash de sessão (SHA-256, determinístico, não reversível), comparação em tempo constante, sessão de banco válida/expirada/revogada/usuário inativo, `LEGACY_ADMIN_ENABLED`, e proteção do último superadmin (6 cenários). |
+| `npm run build` | Automatizado | Sucesso, 22 rotas, `/` dinâmica (esperado — consulta promoções a cada request). |
+| `opennextjs-cloudflare build` | Automatizado | Executado com sucesso, `.open-next/worker.js` gerado. |
+| Migrations 0001 e 0002 (com `token_hash` renomeado) | D1 local | Tabelas recriadas do zero localmente pra validar o schema novo — `DROP TABLE` das tabelas de admin/promoções (nunca `leads`) e reaplicação das migrations. Confirmei via `wrangler d1 execute --command` que `admin_sessions.token_hash` existe e `admin_sessions.id` não. |
+| Seed idempotente | D1 local | Rodei `seed_initial_promotions.sql` duas vezes seguidas — confirmei via SQL que continuam exatamente 2 linhas (Hapvida + Omint), sem duplicar. Confirmei que o texto de público da Hapvida não menciona mais "adesão". |
+| **Bug do item 1 corrigido**: criar promoção já ativa | D1 local, ao vivo | `POST /api/admin/promotions` com `status:"active"` e `full_conditions` preenchido → antes retornava `400` sempre, agora retorna `200`. Histórico de auditoria confirmado gravado atomicamente junto (`action:"created"`). |
+| Exclusão sempre arquiva | D1 local, ao vivo | `DELETE /api/admin/promotions/:id` (com e sem `?hard=true` — o parâmetro agora é ignorado) sempre resulta em `status:"archived"`, nunca remove a linha. Confirmei que a promoção continua existindo via `GET`, some do `/api/promotions` público, e o histórico (`created` + `archived`) permanece. |
+| Token de sessão hasheado | D1 local, ao vivo | Login real → consultei `admin_sessions` via `wrangler d1 execute` → `token_hash` é uma string de 64 caracteres hex, não o valor do cookie (que é `HttpOnly`, o JS do navegador não consegue nem ler pra comparar, o que já é uma camada de proteção adicional). |
+| `LEGACY_ADMIN_ENABLED=false` | D1 local, ao vivo | Adicionei a variável no `.dev.vars` local, reiniciei o servidor, login com `ADMIN_PASSWORD` passou a retornar `401` imediatamente. Removida a variável, reiniciado de novo, voltou a funcionar — confirmando que o padrão (variável ausente) é habilitado, como pedido. |
+| `LEGACY_ADMIN_ENABLED=true` (padrão) | D1 local, ao vivo | Testado ao vivo antes e depois do teste acima — login legado funciona normalmente. |
+| Login individual (conta real) | D1 local, ao vivo | Criei uma conta de teste via UI, fiz login com e-mail+senha, `/api/admin/me` confirmou a sessão real (`isLegacy:false`). |
+| RBAC | D1 local, ao vivo | Conta `admin` recebe `403` em `GET /api/admin/users` (servidor recusa, não é só a aba escondida na UI). |
+| **Proteção do último superadmin** | D1 local, ao vivo | Sequência completa: (1) superadmin A tenta desativar a si mesmo → `400` "própria conta"; (2) criei um segundo superadmin B, logado como B desativei A (2 superadmins ativos) → `200`, sucesso; (3) com sessão legada (ator diferente de B), tentei desativar B, agora o único superadmin ativo → `400` "último superadmin ativo". |
+| ID inválido / conta inexistente | D1 local, ao vivo | `PATCH /api/admin/users/abc` → `400`; `PATCH /api/admin/users/-1` → `400`; `PATCH /api/admin/users/9999` → `404`. Mesma validação nas rotas de promoção. |
+| Validação de campos administrativos | D1 local, ao vivo | `public_cta_target:"javascript:alert(1)"` → `400`; `title:null` ou `title:""` num `PATCH` → `400` (nunca chega a tentar gravar `NULL` numa coluna `NOT NULL`). |
+| Rate limiting de login | D1 local (rodada anterior) | 5 tentativas erradas travam por 15 min, `429` com mensagem clara. |
+| Acesso sem sessão às APIs administrativas | D1 local, ao vivo | `/api/admin/leads`, `/api/admin/promotions`, `/api/admin/promotions/:id` retornam `401` sem cookie. |
+| CRUD de promoções (rascunho/agendada/expirada/arquivada) | D1 local, ao vivo | Criei uma promoção com `starts_at` no futuro (dezembro/2026) → badge "Agendada" no Admin, ausente do público. Criei uma com `ends_at` em janeiro/2026 (já passado) → badge "Expirada", ausente do público. Confirmado visualmente na tela de Promoções. |
+| Alteração + auditoria atômica | Inspeção de código + D1 local | `db.batch([...])` do D1 é transacional (documentação oficial: todas as statements do batch são commitadas juntas ou nenhuma é); testei indiretamente confirmando que toda alteração/arquivamento gerou exatamente uma linha de histórico correspondente, sem nenhum caso de alteração sem histórico ou vice-versa. |
+| **Home com Hapvida ativa** | D1 local, ao vivo | Carreguei `/` — seção "Condições comerciais vigentes" aparece com a Hapvida, texto de público sem "adesão". |
+| **Home sem promoções** | D1 local, ao vivo | Arquivei todas as promoções de teste — a seção simplesmente não renderiza (sem placeholder vazio). |
+| **Home funcionando sem a tabela de promoções** | D1 local, ao vivo | Renomeei `promotions` temporariamente (`ALTER TABLE ... RENAME`) — a Home carregou completa, sem a seção, erro só no log/overlay de dev (nunca em produção); depois renomeei de volta. |
+| **CTA → `/?promo=slug#simulacao`** | Ao vivo | Confirmado o formato correto da URL (query antes do fragmento) e o scroll automático até o formulário. |
+| **Lead gravado com `promotion_slug`** | D1 local, ao vivo | Preenchi o formulário a partir do CTA da Hapvida — `SELECT promotion_slug FROM leads` confirmou o slug correto gravado. |
+| Pixel / API de Conversões / deduplicação | Inspeção de código | **Não testado no Gerenciador de Eventos da Meta.** `event_id`, `sourcePage`, `campaign` e o disparo em `/api/lead` continuam exatamente iguais — nenhum desses campos foi tocado nesta branch. |
+| Viewport mobile real | Não testado | Mesma limitação já registrada nas rodadas anteriores — a ferramenta de emulação de viewport não altera `window.innerWidth` neste ambiente de sessão. |
+| Segredos / `.dev.vars` | Inspeção | Confirmado que `.dev.vars` segue fora do Git; a alteração temporária feita pra testar `LEGACY_ADMIN_ENABLED=false` foi revertida antes do commit. Nenhuma credencial nova foi commitada. |
+
+**Nota sobre o ambiente de teste**: durante a auditoria, o processo do `next dev` travou duas vezes por
+motivos de infraestrutura do Next.js/Turbopack no Windows (não relacionados ao código desta branch) — um
+"Jest worker encountered... exceeding retry limit" e, depois, todas as rotas `/api/admin/*` retornando
+`404` após um restart (resolvido limpando o cache `.next/`). Cada vez, reiniciei o servidor de
+desenvolvimento e confirmei que os testes voltavam a passar. Documentado aqui por transparência, não é um
+problema do código da aplicação.
+
+### Ordem segura para produção
+
+**Nada disto foi executado nesta rodada — só documentado.** Quando decidirem publicar de verdade:
+
+```bash
+# 1. Backup/Time Travel do D1 (Cloudflare mantém isso automaticamente, mas confirme o ponto de restauração)
+npx wrangler d1 time-travel info luciana-pandolfi-leads
+
+# 2. Migration de contas administrativas
+npx wrangler d1 execute luciana-pandolfi-leads --remote --file=migrations/0001_admin_accounts.sql
+
+# 3. Migration de promoções
+npx wrangler d1 execute luciana-pandolfi-leads --remote --file=migrations/0002_promotions.sql
+
+# 4. Seed inicial (Hapvida ativa, Omint rascunho)
+npx wrangler d1 execute luciana-pandolfi-leads --remote --file=migrations/seed_initial_promotions.sql
+
+# 5. Verificação das tabelas e registros antes de publicar código novo
+npx wrangler d1 execute luciana-pandolfi-leads --remote --command "SELECT slug, status, starts_at, ends_at FROM promotions"
+npx wrangler d1 execute luciana-pandolfi-leads --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
+
+# 6. Deploy do Worker (só depois que 1–5 confirmarem sucesso)
+npm run deploy
+
+# 7. Criação das contas — autenticado com ADMIN_PASSWORD (ainda habilitado), ir em /admin → Usuários e
+#    criar a conta do Diego, da Luciana e do Jhonatan (testar login de pelo menos dois superadmins)
+
+# 8. Só depois de confirmar que pelo menos 2 contas superadmin fazem login com sucesso:
+npx wrangler secret put LEGACY_ADMIN_ENABLED --name luciana-pandolfi
+#    (colar o valor "false" quando solicitado — nunca no chat, README ou log)
+#    Alternativa sem secret: editar wrangler.toml, trocar [vars] LEGACY_ADMIN_ENABLED de "true" pra
+#    "false", commitar (não é segredo, é só um interruptor) e rodar `npm run deploy` de novo.
+
+# 9. Confirmar que a senha antiga deixou de funcionar
+#    (tentar logar em /admin só com a senha, sem e-mail — deve retornar "E-mail ou senha inválidos.")
+```
+
+Passo 5 é intencionalmente antes do deploy do código novo — as migrations em D1 remoto são independentes
+do deploy do Worker, então aplicar o schema primeiro e confirmar que as tabelas existem evita o cenário
+descrito no item 9 da auditoria (Home caindo por falta de tabela). O código já tem a defesa (`try/catch`)
+para esse caso mesmo assim — é defesa em profundidade, não substituição da ordem correta.
 
 ### Migrations criadas
 
 - `migrations/0001_admin_accounts.sql` — `admin_users`, `admin_sessions`, `admin_login_attempts`.
+  A coluna de sessão foi renomeada de `id` pra `token_hash` nesta correção — como a migration ainda não
+  tinha sido aplicada em nenhum lugar além do D1 local, editei o arquivo original ao invés de criar uma
+  migration `0003` só de rename.
 - `migrations/0002_promotions.sql` — `promotions`, `promotion_audit_log`, `ALTER TABLE leads ADD COLUMN
   promotion_slug TEXT`.
-- `migrations/seed_initial_promotions.sql` — Hapvida (ativa) e Omint (rascunho); não aplicado
+- `migrations/seed_initial_promotions.sql` — Hapvida (ativa) e Omint (rascunho); **agora idempotente**
+  (`INSERT OR IGNORE` pelo `slug`, único) — rodar mais de uma vez não duplica. Não aplicado
   automaticamente.
 
 Nenhuma migration altera ou apaga `leads`, UTMs ou dado existente — só adiciona tabelas novas e uma
@@ -243,11 +368,13 @@ alterado por elas. Se precisar desfazer de fato num ambiente de teste: `DROP TAB
 `DROP`/`RENAME` (SQLite não tem `DROP COLUMN` direto em todas as versões) — não foi necessário fazer
 isso, é só a documentação de como seria.
 
-### Arquivos alterados/criados nesta branch
+### Arquivos alterados/criados (commit inicial + correções da auditoria)
 
 **Novos**: `migrations/0001_admin_accounts.sql`, `migrations/0002_promotions.sql`,
 `migrations/seed_initial_promotions.sql`, `src/lib/crypto.ts`, `src/lib/promotions.ts`,
-`src/lib/__tests__/promotions.test.ts`, `src/lib/__tests__/crypto.test.ts`, `vitest.config.ts`,
+`src/lib/session-logic.ts`, `src/lib/admin-users.ts`,
+`src/lib/__tests__/promotions.test.ts`, `src/lib/__tests__/crypto.test.ts`,
+`src/lib/__tests__/session-logic.test.ts`, `src/lib/__tests__/admin-users.test.ts`, `vitest.config.ts`,
 `src/components/admin/AdminSessionContext.tsx`, `src/app/admin/AdminLayoutClient.tsx`,
 `src/app/admin/promocoes/page.tsx`, `src/app/admin/usuarios/page.tsx`,
 `src/app/api/admin/me/route.ts`, `src/app/api/admin/users/route.ts`,
@@ -255,21 +382,33 @@ isso, é só a documentação de como seria.
 `src/app/api/admin/promotions/[id]/route.ts`, `src/app/api/promotions/route.ts`,
 `src/components/PromotionsSection.tsx`.
 
-**Alterados**: `src/lib/auth.ts` (reescrito), `src/lib/db.ts` (funções novas, aditivo),
-`src/app/admin/layout.tsx`, `src/app/admin/page.tsx`, `src/app/api/admin/login/route.ts`,
-`src/app/api/admin/logout/route.ts`, `src/app/api/lead/route.ts` (campo opcional novo),
-`src/components/LeadFormQualificacao.tsx` (prop opcional nova), `src/app/page.tsx` (busca promoções +
-nova seção), `src/components/FAQAccordion.tsx`, `src/components/Footer.tsx`,
-`src/app/plano-familiar/page.tsx`, `src/app/plano-empresarial/page.tsx`, `package.json` (script `test`
-+ `vitest` como devDependency).
+**Alterados**: `src/lib/auth.ts` (reescrito — sessão hasheada, `LEGACY_ADMIN_ENABLED`, comparação em
+tempo constante), `src/lib/db.ts` (funções novas + `createPromotionWithAudit`/
+`updatePromotionWithAudit`/`archivePromotionWithAudit` atômicas via `db.batch`, `deletePromotionPermanently`
+removida), `src/app/admin/layout.tsx`, `src/app/admin/page.tsx`, `src/app/api/admin/login/route.ts`,
+`src/app/api/admin/logout/route.ts`, `src/app/api/admin/users/[id]/route.ts` (proteção do último
+superadmin), `src/app/api/admin/promotions/route.ts` (bug do `full_conditions` corrigido),
+`src/app/api/admin/promotions/[id]/route.ts` (reescrito — validação reforçada, sem hard delete),
+`src/app/api/lead/route.ts` (campo opcional novo), `src/app/api/promotions/route.ts` (defensivo),
+`src/app/page.tsx` (busca promoções defensiva + nova seção), `src/components/LeadFormQualificacao.tsx`
+(prop opcional nova), `src/components/FAQAccordion.tsx`, `src/components/Footer.tsx`,
+`src/app/plano-familiar/page.tsx`, `src/app/plano-empresarial/page.tsx`, `wrangler.toml`
+(`[vars] LEGACY_ADMIN_ENABLED`), `cloudflare-env.d.ts` (tipo da variável nova), `package.json` (script
+`test` + `vitest` como devDependency).
 
 ### Secrets que vão precisar ser configurados no futuro
 
-**Nenhum secret novo é necessário pra esta branch funcionar** — reaproveita o `ADMIN_PASSWORD` que já
-existe. Os únicos secrets pendentes já eram conhecidos de rodadas anteriores (`META_CAPI_TOKEN` em
-produção — ver seção "Pixel da Meta" mais abaixo). Se decidirem desativar a ponte legada no futuro, isso
-não precisa de secret novo — só de garantir que todo mundo que precisa acessar já tem conta real
-criada.
+**Nenhum secret novo é obrigatório** pra esta branch funcionar — reaproveita o `ADMIN_PASSWORD` que já
+existe, e `LEGACY_ADMIN_ENABLED` não é segredo (é só um interruptor, seguro pra ficar em `[vars]` no
+`wrangler.toml`, já commitado com valor `"true"`). Os únicos secrets pendentes já eram conhecidos de
+rodadas anteriores (`META_CAPI_TOKEN` em produção — ver seção "Pixel da Meta" mais abaixo).
+
+Quando decidirem desativar o acesso legado (depois de testar pelo menos 2 contas superadmin reais),
+duas opções, nenhuma delas exige um secret novo de verdade:
+- Editar `wrangler.toml`, trocar `LEGACY_ADMIN_ENABLED` pra `"false"`, commitar e fazer redeploy; ou
+- Rodar `npx wrangler secret put LEGACY_ADMIN_ENABLED --name luciana-pandolfi` e colar `false` quando
+  pedido (funciona igual, só não fica versionado no Git — usar essa via se preferirem não deixar nem o
+  "true"/"false" público no repositório, por precaução extra, embora não seja informação sensível).
 
 ### Pendências (dependem de Diego ou da cliente)
 
@@ -278,6 +417,8 @@ criada.
 - Confirmar com Luciana/Jhonatan se a campanha Omint continua vigente em 01/09 antes de publicá-la
   (hoje fica em rascunho).
 - Confirmação explícita sobre atendimento comercial nacional (item "Atendimento em todo o Brasil" acima).
+- Decidir quando desativar `LEGACY_ADMIN_ENABLED` — só depois de confirmar que pelo menos duas contas
+  superadmin reais fazem login com sucesso em produção (ver "Ordem segura para produção" acima).
 - Mesmas pendências de rodadas anteriores (número de famílias/empresas atendidas, domínio próprio,
   fonte para "rede de hospitais de referência").
 

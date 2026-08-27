@@ -163,7 +163,7 @@ export async function touchAdminUserLogin(id: number): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export interface AdminSessionRow {
-  id: string;
+  token_hash: string;
   user_id: number;
   created_at: string;
   expires_at: string;
@@ -173,7 +173,7 @@ export interface AdminSessionRow {
 }
 
 export async function createAdminSession(input: {
-  id: string;
+  tokenHash: string;
   userId: number;
   expiresAt: string;
   userAgent: string | null;
@@ -181,31 +181,34 @@ export async function createAdminSession(input: {
   const db = await getDB();
   await db
     .prepare(
-      `INSERT INTO admin_sessions (id, user_id, expires_at, user_agent) VALUES (?, ?, ?, ?)`
+      `INSERT INTO admin_sessions (token_hash, user_id, expires_at, user_agent) VALUES (?, ?, ?, ?)`
     )
-    .bind(input.id, input.userId, input.expiresAt, input.userAgent)
+    .bind(input.tokenHash, input.userId, input.expiresAt, input.userAgent)
     .run();
 }
 
-export async function getAdminSession(id: string): Promise<AdminSessionRow | null> {
+export async function getAdminSessionByTokenHash(tokenHash: string): Promise<AdminSessionRow | null> {
   const db = await getDB();
-  const row = await db.prepare(`SELECT * FROM admin_sessions WHERE id = ?`).bind(id).first<AdminSessionRow>();
+  const row = await db
+    .prepare(`SELECT * FROM admin_sessions WHERE token_hash = ?`)
+    .bind(tokenHash)
+    .first<AdminSessionRow>();
   return row ?? null;
 }
 
-export async function touchAdminSession(id: string): Promise<void> {
+export async function touchAdminSessionByTokenHash(tokenHash: string): Promise<void> {
   const db = await getDB();
   await db
-    .prepare(`UPDATE admin_sessions SET last_used_at = datetime('now') WHERE id = ?`)
-    .bind(id)
+    .prepare(`UPDATE admin_sessions SET last_used_at = datetime('now') WHERE token_hash = ?`)
+    .bind(tokenHash)
     .run();
 }
 
-export async function revokeAdminSession(id: string): Promise<void> {
+export async function revokeAdminSessionByTokenHash(tokenHash: string): Promise<void> {
   const db = await getDB();
   await db
-    .prepare(`UPDATE admin_sessions SET revoked_at = datetime('now') WHERE id = ?`)
-    .bind(id)
+    .prepare(`UPDATE admin_sessions SET revoked_at = datetime('now') WHERE token_hash = ?`)
+    .bind(tokenHash)
     .run();
 }
 
@@ -353,9 +356,25 @@ export async function getPromotionById(id: number): Promise<PromotionRow | null>
   return row ?? null;
 }
 
-export async function createPromotion(input: PromotionWriteInput): Promise<number> {
+export interface AuditEntryInput {
+  action: string;
+  actorUserId: number | null;
+  actorName: string;
+  details?: string | null;
+}
+
+/**
+ * Cria a promoção e grava a entrada de auditoria como uma única transação (D1 `batch`
+ * roda todas as statements atomicamente: ou tudo é aplicado, ou nada é). O insert de
+ * auditoria resolve `promotion_id` por sub-select no `slug` (único), então não precisa
+ * do `last_row_id` do insert anterior pra montar o bind.
+ */
+export async function createPromotionWithAudit(
+  input: PromotionWriteInput,
+  audit: AuditEntryInput
+): Promise<number> {
   const db = await getDB();
-  const result = await db
+  const insertStmt = db
     .prepare(
       `INSERT INTO promotions (
         slug, operator_name, title, short_description, benefit_type, benefit_value,
@@ -391,55 +410,68 @@ export async function createPromotion(input: PromotionWriteInput): Promise<numbe
       input.internal_notes,
       input.created_by,
       input.updated_by
+    );
+  const auditStmt = db
+    .prepare(
+      `INSERT INTO promotion_audit_log (promotion_id, action, actor_user_id, actor_name, details)
+       VALUES ((SELECT id FROM promotions WHERE slug = ?), ?, ?, ?, ?)`
     )
-    .run();
-  return Number(result.meta.last_row_id);
+    .bind(input.slug, audit.action, audit.actorUserId, audit.actorName, audit.details ?? null);
+
+  const results = await db.batch([insertStmt, auditStmt]);
+  return Number(results[0].meta.last_row_id);
 }
 
-export async function updatePromotion(
+/**
+ * Atualiza a promoção e grava a auditoria numa única transação D1 (`batch`) — evita o
+ * cenário de "promoção alterada, mas histórico não gravado" ou vice-versa.
+ */
+export async function updatePromotionWithAudit(
   id: number,
-  input: Partial<PromotionWriteInput>
+  input: Partial<PromotionWriteInput>,
+  audit: AuditEntryInput
 ): Promise<void> {
   const db = await getDB();
   const fields = Object.keys(input) as (keyof PromotionWriteInput)[];
-  if (fields.length === 0) return;
-  const setClause = fields.map((f) => `${f} = ?`).join(", ");
-  const values = fields.map((f) => input[f] as unknown);
-  await db
-    .prepare(`UPDATE promotions SET ${setClause}, updated_at = datetime('now') WHERE id = ?`)
-    .bind(...values, id)
-    .run();
+  const statements = [];
+
+  if (fields.length > 0) {
+    const setClause = fields.map((f) => `${f} = ?`).join(", ");
+    const values = fields.map((f) => input[f] as unknown);
+    statements.push(
+      db
+        .prepare(`UPDATE promotions SET ${setClause}, updated_at = datetime('now') WHERE id = ?`)
+        .bind(...values, id)
+    );
+  }
+  statements.push(
+    db
+      .prepare(
+        `INSERT INTO promotion_audit_log (promotion_id, action, actor_user_id, actor_name, details) VALUES (?, ?, ?, ?, ?)`
+      )
+      .bind(id, audit.action, audit.actorUserId, audit.actorName, audit.details ?? null)
+  );
+
+  await db.batch(statements);
 }
 
-export async function archivePromotion(id: number): Promise<void> {
+/**
+ * Arquiva (nunca apaga) e grava a auditoria atomicamente. É a única forma de "remoção"
+ * exposta pelo painel — preserva os dados e o histórico completo.
+ */
+export async function archivePromotionWithAudit(id: number, audit: AuditEntryInput): Promise<void> {
   const db = await getDB();
-  await db
+  const archiveStmt = db
     .prepare(
       `UPDATE promotions SET status = 'archived', archived_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`
     )
-    .bind(id)
-    .run();
-}
-
-export async function deletePromotionPermanently(id: number): Promise<void> {
-  const db = await getDB();
-  await db.prepare(`DELETE FROM promotions WHERE id = ?`).bind(id).run();
-}
-
-export async function logPromotionAudit(entry: {
-  promotionId: number;
-  action: string;
-  actorUserId: number | null;
-  actorName: string;
-  details?: string | null;
-}): Promise<void> {
-  const db = await getDB();
-  await db
+    .bind(id);
+  const auditStmt = db
     .prepare(
       `INSERT INTO promotion_audit_log (promotion_id, action, actor_user_id, actor_name, details) VALUES (?, ?, ?, ?, ?)`
     )
-    .bind(entry.promotionId, entry.action, entry.actorUserId, entry.actorName, entry.details ?? null)
-    .run();
+    .bind(id, audit.action, audit.actorUserId, audit.actorName, audit.details ?? null);
+  await db.batch([archiveStmt, auditStmt]);
 }
 
 export interface PromotionAuditRow {

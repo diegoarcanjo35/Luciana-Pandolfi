@@ -1,6 +1,9 @@
 -- Promoções iniciais para o lançamento de 01/09/2026 — ver README para a análise completa
 -- de cada campanha (o que foi incluído, o que foi excluído e por quê).
 --
+-- Idempotente: usa INSERT OR IGNORE sobre o slug (UNIQUE) — rodar este arquivo mais de uma
+-- vez não duplica nem derruba o procedimento, só não faz nada na segunda vez em diante.
+--
 -- ATENÇÃO: este arquivo NÃO é aplicado automaticamente. Rodar manualmente, só depois de
 -- decidir o ambiente (local, prévia ou produção — nunca produção nesta etapa):
 --   npx wrangler d1 execute luciana-pandolfi-leads --local --file=migrations/seed_initial_promotions.sql
@@ -9,7 +12,11 @@
 -- Fonte pública de apoio: https://cobroker.com.br/campanha-hapvida-50-de-desconto-na-1a-mensalidade/
 -- (guardada como referência administrativa em source_reference — não citar a CoBroker
 -- como parceira da L&J em nenhuma comunicação pública).
-INSERT INTO promotions (
+-- Público elegível restrito exatamente ao que a fonte confirma (Super Simples 1 vida,
+-- Super Simples 2 a 29 vidas, PME 30 a 99 vidas) — "adesão" foi removido por não ter
+-- confirmação específica; não afirmamos que toda contratação individual, por adesão ou
+-- PME se qualifica automaticamente.
+INSERT OR IGNORE INTO promotions (
   slug, operator_name, title, short_description, benefit_type, benefit_value,
   full_conditions, eligible_products, eligible_audience, minimum_lives, maximum_lives,
   eligible_locations, starts_at, ends_at, status, is_featured, display_order,
@@ -24,7 +31,7 @@ INSERT INTO promotions (
   '50% na primeira mensalidade',
   'Desconto de 50% na primeira mensalidade para os produtos e praças participantes. A elegibilidade, o produto disponível e a aplicação do desconto são confirmados durante a análise.',
   'Super Simples (1 vida); Super Simples (2 a 29 vidas); PME (30 a 99 vidas)',
-  'Individual, adesão e PME (conforme produto)',
+  'Super Simples de 1 a 29 vidas e PME de 30 a 99 vidas, conforme elegibilidade e produto participante.',
   1,
   99,
   'São Paulo/SP; Mogi das Cruzes/SP; São Bernardo do Campo/SP',
@@ -44,7 +51,7 @@ INSERT INTO promotions (
 -- Omint — rascunho (não aparece publicamente). Sem data de encerramento pública
 -- identificada — permanece rascunho até Luciana ou Jhonatan confirmarem vigência em 01/09.
 -- Fonte pública de apoio: https://cobroker.com.br/campanha-desconto-omint/
-INSERT INTO promotions (
+INSERT OR IGNORE INTO promotions (
   slug, operator_name, title, short_description, benefit_type, benefit_value,
   full_conditions, eligible_products, eligible_audience, minimum_lives, maximum_lives,
   eligible_locations, starts_at, ends_at, status, is_featured, display_order,
@@ -59,7 +66,7 @@ INSERT INTO promotions (
   '15% (Skill/Kipp) ou 20% (Corporate/Premium)',
   'Desconto de 15% nas linhas Skill e Kipp, e de 20% nas linhas Corporate e Premium, para empresas de 4 a 99 vidas. Cotações a partir de 01/07/2026. A elegibilidade e a condição final são confirmadas durante a análise.',
   'Linhas Skill, Kipp, Corporate e Premium',
-  'PME (empresas)',
+  'PME (empresas), 4 a 99 vidas',
   4,
   99,
   NULL,

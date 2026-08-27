@@ -25,25 +25,47 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
   const promotionSlug = typeof params.promo === "string" ? params.promo : undefined;
 
   const now = new Date();
-  const allActive = await listActivePromotionsRaw();
-  const publicPromotions = allActive
-    .filter((p) => isPubliclyVisible({ status: p.status, starts_at: p.starts_at, ends_at: p.ends_at }, now))
-    .sort((a, b) => a.display_order - b.display_order)
-    .map((p) => ({
-      slug: p.slug,
-      operator_name: p.operator_name,
-      title: p.title,
-      short_description: p.short_description,
-      benefit_value: p.benefit_value,
-      eligible_products: p.eligible_products,
-      eligible_audience: p.eligible_audience,
-      eligible_locations: p.eligible_locations,
-      starts_at: p.starts_at,
-      ends_at: p.ends_at,
-      is_featured: Boolean(p.is_featured),
-      public_cta_label: p.public_cta_label ?? "Quero saber se me qualifico",
-      public_cta_target: p.public_cta_target ?? "#simulacao",
-    }));
+  // Defensivo: se a tabela `promotions` ainda não existir (migration não aplicada) ou o
+  // D1 falhar por qualquer motivo, a Home não pode cair — a seção de promoções só some.
+  // O erro fica só no log do servidor, nunca é exposto ao visitante.
+  let publicPromotions: {
+    slug: string;
+    operator_name: string;
+    title: string;
+    short_description: string;
+    benefit_value: string | null;
+    eligible_products: string | null;
+    eligible_audience: string | null;
+    eligible_locations: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    is_featured: boolean;
+    public_cta_label: string;
+    public_cta_target: string;
+  }[] = [];
+  try {
+    const allActive = await listActivePromotionsRaw();
+    publicPromotions = allActive
+      .filter((p) => isPubliclyVisible({ status: p.status, starts_at: p.starts_at, ends_at: p.ends_at }, now))
+      .sort((a, b) => a.display_order - b.display_order)
+      .map((p) => ({
+        slug: p.slug,
+        operator_name: p.operator_name,
+        title: p.title,
+        short_description: p.short_description,
+        benefit_value: p.benefit_value,
+        eligible_products: p.eligible_products,
+        eligible_audience: p.eligible_audience,
+        eligible_locations: p.eligible_locations,
+        starts_at: p.starts_at,
+        ends_at: p.ends_at,
+        is_featured: Boolean(p.is_featured),
+        public_cta_label: p.public_cta_label ?? "Quero saber se me qualifico",
+        public_cta_target: p.public_cta_target ?? "#simulacao",
+      }));
+  } catch (err) {
+    console.error("Falha ao buscar promoções para a Home — seção fica oculta.", err);
+  }
 
   return (
     <>

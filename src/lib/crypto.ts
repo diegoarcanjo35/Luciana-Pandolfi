@@ -65,3 +65,26 @@ export function generateOpaqueToken(byteLength = 32): string {
   const bytes = crypto.getRandomValues(new Uint8Array(byteLength));
   return toHex(bytes.buffer as ArrayBuffer);
 }
+
+/** SHA-256 hex de um texto qualquer — usado pra nunca gravar token de sessão em claro no D1. */
+export async function sha256Hex(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return toHex(hashBuffer);
+}
+
+/**
+ * Comparação em tempo constante para duas strings de comprimento arbitrário (ex.: senha do
+ * caminho legado). Sempre percorre o comprimento do maior lado, mesmo quando os tamanhos
+ * diferem, pra não vazar o comprimento da senha correta pelo tempo de resposta.
+ */
+export function timingSafeEqualString(a: string, b: string): boolean {
+  const maxLength = Math.max(a.length, b.length);
+  let diff = a.length === b.length ? 0 : 1;
+  for (let i = 0; i < maxLength; i++) {
+    const charA = i < a.length ? a.charCodeAt(i) : 0;
+    const charB = i < b.length ? b.charCodeAt(i) : 0;
+    diff |= charA ^ charB;
+  }
+  return diff === 0;
+}

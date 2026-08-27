@@ -239,6 +239,10 @@ export default function AdminPromotionsPage() {
         <div>
           <h1 className="font-serif-display text-2xl font-semibold text-navy">Promoções</h1>
           <p className="text-sm text-slate-500">{promotions.length} cadastrada(s) ao todo</p>
+          <p className="mt-1 text-xs text-slate-400">
+            &ldquo;Arquivar&rdquo; nunca apaga — a promoção some da exibição pública, mas os dados e
+            o histórico de alterações continuam disponíveis aqui.
+          </p>
         </div>
         <button
           onClick={openNew}
@@ -595,6 +599,10 @@ export default function AdminPromotionsPage() {
                   placeholder="#simulacao"
                   className={inputClass}
                 />
+                <p className="mt-1 text-xs text-slate-400">
+                  Só destinos internos: uma âncora (#simulacao) ou um caminho começando com /
+                  (ex.: /plano-familiar#simulacao).
+                </p>
               </div>
               <div className="sm:col-span-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">

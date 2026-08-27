@@ -5,6 +5,9 @@ import {
   todaySaoPaulo,
   slugify,
   validatePromotionInput,
+  isSafeCtaTarget,
+  isNonNegativeInt,
+  isValidDisplayOrder,
 } from "../promotions";
 
 // "Agora" fixo em 01/09/2026 meio-dia UTC — data do lançamento, usada em quase todo teste.
@@ -180,5 +183,128 @@ describe("validatePromotionInput", () => {
   it("rejeita mínimo de vidas maior que o máximo", () => {
     const errors = validatePromotionInput({ ...base, minimum_lives: 100, maximum_lives: 10 });
     expect(errors.some((e) => e.includes("vidas"))).toBe(true);
+  });
+
+  it("rejeita número de vidas não inteiro/negativo", () => {
+    expect(validatePromotionInput({ ...base, minimum_lives: -1 }).length).toBeGreaterThan(0);
+    expect(validatePromotionInput({ ...base, minimum_lives: 2.5 }).length).toBeGreaterThan(0);
+  });
+
+  it("rejeita display_order fora da faixa ou não inteiro", () => {
+    expect(validatePromotionInput({ ...base, display_order: -1 }).length).toBeGreaterThan(0);
+    expect(validatePromotionInput({ ...base, display_order: 1.5 }).length).toBeGreaterThan(0);
+    expect(validatePromotionInput({ ...base, display_order: 999_999 }).length).toBeGreaterThan(0);
+  });
+
+  it("aceita display_order dentro da faixa", () => {
+    expect(validatePromotionInput({ ...base, display_order: 0 })).toEqual([]);
+    expect(validatePromotionInput({ ...base, display_order: 500 })).toEqual([]);
+  });
+
+  it("rejeita is_featured que não seja booleano real", () => {
+    const errors = validatePromotionInput({ ...base, is_featured: "true" });
+    expect(errors.some((e) => e.includes("Destaque"))).toBe(true);
+  });
+
+  it("rejeita public_cta_target perigoso", () => {
+    const errors = validatePromotionInput({ ...base, public_cta_target: "javascript:alert(1)" });
+    expect(errors.some((e) => e.includes("CTA"))).toBe(true);
+  });
+
+  it("aceita public_cta_target seguro", () => {
+    expect(validatePromotionInput({ ...base, public_cta_target: "#simulacao" })).toEqual([]);
+    expect(validatePromotionInput({ ...base, public_cta_target: "/plano-familiar#simulacao" })).toEqual([]);
+  });
+
+  // Regressão do bug real: criar promoção diretamente como ativa, com condições completas
+  // enviadas, tinha que passar — o bug era o campo full_conditions não chegar no objeto de
+  // validação no route handler, não um problema nesta função. Estes casos cobrem o cenário
+  // pedido na auditoria: rascunho, ativa direta com condições, publicação sem condições
+  // (deve falhar), rascunho publicado depois, e data final antes da inicial.
+  describe("cenários da auditoria — criação e publicação", () => {
+    const complete = { ...base, full_conditions: "Condições completas e detalhadas da campanha." };
+
+    it("cria em rascunho sem exigir condições completas", () => {
+      expect(validatePromotionInput(base, { forPublish: false })).toEqual([]);
+    });
+
+    it("cria diretamente como ativa quando as condições completas foram enviadas", () => {
+      const errors = validatePromotionInput({ ...complete, status: "active" }, { forPublish: true });
+      expect(errors).toEqual([]);
+    });
+
+    it("impede publicação sem condições completas", () => {
+      const errors = validatePromotionInput({ ...base, status: "active" }, { forPublish: true });
+      expect(errors.some((e) => e.includes("Condições completas"))).toBe(true);
+    });
+
+    it("permite salvar rascunho e, depois, publicar (duas chamadas em sequência)", () => {
+      const draftErrors = validatePromotionInput(base, { forPublish: false });
+      expect(draftErrors).toEqual([]);
+      const publishErrors = validatePromotionInput(
+        { ...complete, status: "active" },
+        { forPublish: true }
+      );
+      expect(publishErrors).toEqual([]);
+    });
+
+    it("impede data final anterior à inicial mesmo com condições completas", () => {
+      const errors = validatePromotionInput(
+        { ...complete, starts_at: "2026-09-30", ends_at: "2026-07-27", status: "active" },
+        { forPublish: true }
+      );
+      expect(errors.some((e) => e.includes("Data final"))).toBe(true);
+    });
+  });
+});
+
+describe("isSafeCtaTarget", () => {
+  it("aceita âncoras simples", () => {
+    expect(isSafeCtaTarget("#simulacao")).toBe(true);
+    expect(isSafeCtaTarget("#analise")).toBe(true);
+  });
+
+  it("aceita caminhos internos", () => {
+    expect(isSafeCtaTarget("/plano-familiar")).toBe(true);
+    expect(isSafeCtaTarget("/plano-familiar#simulacao")).toBe(true);
+    expect(isSafeCtaTarget("/?promo=hapvida#simulacao")).toBe(true);
+  });
+
+  it("rejeita protocolo javascript:", () => {
+    expect(isSafeCtaTarget("javascript:alert(1)")).toBe(false);
+  });
+
+  it("rejeita protocolo data:", () => {
+    expect(isSafeCtaTarget("data:text/html,<script>alert(1)</script>")).toBe(false);
+  });
+
+  it("rejeita domínio externo", () => {
+    expect(isSafeCtaTarget("https://evil.com")).toBe(false);
+    expect(isSafeCtaTarget("http://evil.com")).toBe(false);
+  });
+
+  it("rejeita URL protocol-relative (//dominio)", () => {
+    expect(isSafeCtaTarget("//evil.com")).toBe(false);
+  });
+
+  it("rejeita string vazia", () => {
+    expect(isSafeCtaTarget("")).toBe(false);
+  });
+});
+
+describe("isNonNegativeInt / isValidDisplayOrder", () => {
+  it("isNonNegativeInt aceita 0 e inteiros positivos, rejeita negativos e decimais", () => {
+    expect(isNonNegativeInt(0)).toBe(true);
+    expect(isNonNegativeInt(42)).toBe(true);
+    expect(isNonNegativeInt(-1)).toBe(false);
+    expect(isNonNegativeInt(1.5)).toBe(false);
+    expect(isNonNegativeInt("5")).toBe(false);
+  });
+
+  it("isValidDisplayOrder aceita a faixa 0–10000, rejeita fora dela", () => {
+    expect(isValidDisplayOrder(0)).toBe(true);
+    expect(isValidDisplayOrder(10_000)).toBe(true);
+    expect(isValidDisplayOrder(10_001)).toBe(false);
+    expect(isValidDisplayOrder(-1)).toBe(false);
   });
 });
