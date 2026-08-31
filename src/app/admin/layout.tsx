@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import AdminLayoutClient from "./AdminLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Painel de leads",
+  title: "Painel administrativo",
   robots: { index: false, follow: false },
 };
 
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
-  return children;
+  return <AdminLayoutClient>{children}</AdminLayoutClient>;
 }

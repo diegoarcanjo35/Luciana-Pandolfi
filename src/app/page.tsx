@@ -5,18 +5,68 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CredibilityBar from "@/components/CredibilityBar";
 import OperatorsList from "@/components/OperatorsList";
+import HospitalNetwork from "@/components/HospitalNetwork";
 import SocialProof from "@/components/SocialProof";
 import FAQAccordion from "@/components/FAQAccordion";
 import LeadFormIsca from "@/components/LeadFormIsca";
 import LeadFormQualificacao from "@/components/LeadFormQualificacao";
+import PromotionsSection from "@/components/PromotionsSection";
 import type { Metadata } from "next";
 import { SITE_URL, WHATSAPP_MESSAGES } from "@/lib/site-config";
+import { listActivePromotionsRaw } from "@/lib/db";
+import { isPubliclyVisible } from "@/lib/promotions";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const params = await searchParams;
+  const promotionSlug = typeof params.promo === "string" ? params.promo : undefined;
+
+  const now = new Date();
+  // Defensivo: se a tabela `promotions` ainda não existir (migration não aplicada) ou o
+  // D1 falhar por qualquer motivo, a Home não pode cair — a seção de promoções só some.
+  // O erro fica só no log do servidor, nunca é exposto ao visitante.
+  let publicPromotions: {
+    slug: string;
+    operator_name: string;
+    title: string;
+    short_description: string;
+    benefit_value: string | null;
+    eligible_products: string | null;
+    eligible_audience: string | null;
+    eligible_locations: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    is_featured: boolean;
+    public_cta_label: string;
+    public_cta_target: string;
+  }[] = [];
+  try {
+    const allActive = await listActivePromotionsRaw();
+    publicPromotions = allActive
+      .filter((p) => isPubliclyVisible({ status: p.status, starts_at: p.starts_at, ends_at: p.ends_at }, now))
+      .sort((a, b) => a.display_order - b.display_order)
+      .map((p) => ({
+        slug: p.slug,
+        operator_name: p.operator_name,
+        title: p.title,
+        short_description: p.short_description,
+        benefit_value: p.benefit_value,
+        eligible_products: p.eligible_products,
+        eligible_audience: p.eligible_audience,
+        eligible_locations: p.eligible_locations,
+        starts_at: p.starts_at,
+        ends_at: p.ends_at,
+        is_featured: Boolean(p.is_featured),
+        public_cta_label: p.public_cta_label ?? "Quero saber se me qualifico",
+        public_cta_target: p.public_cta_target ?? "#simulacao",
+      }));
+  } catch (err) {
+    console.error("Falha ao buscar promoções para a Home — seção fica oculta.", err);
+  }
+
   return (
     <>
       <Header />
@@ -54,7 +104,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-xs uppercase tracking-wide text-cream/40">
-                Consultoria independente · Sem custo para você · Atendimento SP e todo o Brasil
+                Consultoria independente · Sem custo para você · Atendimento por telefone e WhatsApp
               </p>
             </div>
 
@@ -214,18 +264,22 @@ export default function HomePage() {
 
         <SocialProof />
 
+        <HospitalNetwork />
+
+        <PromotionsSection promotions={publicPromotions} />
+
         {/* Isca de captura */}
         <section id="guia" className="bg-navy px-4 py-16 text-cream sm:px-6">
           <div className="mx-auto grid max-w-4xl gap-10 sm:grid-cols-2 sm:items-center">
             <div>
               <p className="eyebrow eyebrow-on-dark">Material gratuito</p>
               <h2 className="mt-2 headline-editorial text-2xl text-cream sm:text-3xl">
-                Hospitais de referência de São Paulo e quais planos dão acesso a cada um
+                Como avaliar hospitais e rede credenciada antes de escolher seu plano
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-cream/70">
-                Se existe um hospital em que você quer ser atendido, é por ele que a escolha do
-                plano deveria começar — não pelo preço. Preencha ao lado e nossa equipe te envia
-                o guia completo pelo WhatsApp.
+                Preencha ao lado e nossa equipe te envia, pelo WhatsApp, um guia com o passo a
+                passo para conferir rede credenciada, carência e condições antes de assinar
+                qualquer contrato.
               </p>
             </div>
             <div className="rounded-2xl bg-cream p-6">
@@ -295,7 +349,11 @@ export default function HomePage() {
               </p>
             </div>
             <div className="rounded-2xl border border-navy/10 bg-white p-6 shadow-sm">
-              <LeadFormQualificacao sourcePage="home" ctaLabel="Solicitar minha análise gratuita" />
+              <LeadFormQualificacao
+                sourcePage="home"
+                ctaLabel="Solicitar minha análise gratuita"
+                promotionSlug={promotionSlug}
+              />
             </div>
           </div>
         </section>

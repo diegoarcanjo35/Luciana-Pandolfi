@@ -9,7 +9,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Vocês atendem fora de São Paulo?",
-    a: "Sim — atendimento em todo o Brasil, com especialização na rede hospitalar de São Paulo.",
+    a: "Sim. Consultoria realizada por telefone e WhatsApp, com especialização na rede hospitalar de São Paulo. A disponibilidade das opções, a abrangência e a rede credenciada variam conforme produto, operadora e região.",
   },
   {
     q: "Quais modalidades de plano vocês analisam?",

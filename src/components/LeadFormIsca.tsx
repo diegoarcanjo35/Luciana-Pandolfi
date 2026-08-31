@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone-mask";
 import { getStoredUtm } from "@/lib/utm";
 
@@ -115,7 +116,10 @@ export default function LeadFormIsca({
         {loading ? "Enviando..." : "Receber o guia gratuito"}
       </button>
       <p className="text-center text-xs text-navy/40">
-        Sem custo · Seus dados não são compartilhados com terceiros
+        Sem custo · Seus dados não são vendidos e são tratados conforme nossa{" "}
+        <Link href="/politica-de-privacidade" className="underline decoration-navy/20 hover:text-navy/60">
+          Política de Privacidade
+        </Link>
       </p>
     </form>
   );

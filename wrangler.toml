@@ -11,3 +11,9 @@ binding = "ASSETS"
 binding = "DB"
 database_name = "luciana-pandolfi-leads"
 database_id = "e812f30b-5fac-4bc7-838d-2b8a0569cec4"
+
+[vars]
+# Controla o login por senha única (ADMIN_PASSWORD). Não é segredo — só um interruptor.
+# Manter "true" até Diego, Luciana e Jhonatan terem contas reais testadas; depois, trocar
+# para "false" (ver README, seção "Branch launch-promotions-admin") e fazer redeploy.
+LEGACY_ADMIN_ENABLED = "true"

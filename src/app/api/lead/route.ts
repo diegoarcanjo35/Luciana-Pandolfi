@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
       utm_campaign: str(body.utm_campaign),
       utm_content: str(body.utm_content),
       utm_term: str(body.utm_term),
+      promotion_slug: str(body.promotion_slug),
     });
   } catch (err) {
     console.error("Falha ao gravar lead", err);

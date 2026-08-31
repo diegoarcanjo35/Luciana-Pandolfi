@@ -7,6 +7,10 @@ interface __BaseEnv_CloudflareEnv {
 	ADMIN_PASSWORD: string;
 	META_CAPI_TOKEN: string;
 	META_CAPI_TEST_EVENT_CODE: string;
+	// Controla se o login por senha única (ADMIN_PASSWORD) continua aceito. Não é secret —
+	// pode ir em [vars] no wrangler.toml. Default (não definida, ou qualquer valor que não
+	// seja a string "false") = habilitado, pra nunca travar o acesso do Diego sem querer.
+	LEGACY_ADMIN_ENABLED?: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
