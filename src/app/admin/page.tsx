@@ -56,6 +56,7 @@ export default function AdminLeadsPage() {
               <th className="px-4 py-3">Hospital</th>
               <th className="px-4 py-3">UTM source</th>
               <th className="px-4 py-3">UTM campaign</th>
+              <th className="px-4 py-3">Criativo (UTM content)</th>
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
@@ -80,12 +81,13 @@ export default function AdminLeadsPage() {
                 <td className="whitespace-nowrap px-4 py-3">{lead.hospital_especifico ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.utm_source ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.utm_campaign ?? "—"}</td>
+                <td className="whitespace-nowrap px-4 py-3">{lead.utm_content ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.status}</td>
               </tr>
             ))}
             {!loadingLeads && leads.length === 0 && (
               <tr>
-                <td colSpan={17} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={18} className="px-4 py-10 text-center text-slate-400">
                   Nenhum lead recebido ainda.
                 </td>
               </tr>
