@@ -88,6 +88,7 @@ export interface AdminUserRow {
   password_hash: string;
   role: AdminRole;
   status: AdminStatus;
+  must_change_password: number;
   created_at: string;
   updated_at: string;
   last_login_at: string | null;
@@ -112,7 +113,8 @@ export async function listAdminUsers(): Promise<Omit<AdminUserRow, "password_has
   const db = await getDB();
   const { results } = await db
     .prepare(
-      `SELECT id, name, email, role, status, created_at, updated_at, last_login_at FROM admin_users ORDER BY created_at ASC`
+      `SELECT id, name, email, role, status, must_change_password, created_at, updated_at, last_login_at
+       FROM admin_users ORDER BY created_at ASC`
     )
     .all<Omit<AdminUserRow, "password_hash">>();
   return results;
@@ -131,15 +133,33 @@ export async function createAdminUser(input: {
   email: string;
   passwordHash: string;
   role: AdminRole;
+  mustChangePassword: boolean;
 }): Promise<number> {
   const db = await getDB();
   const result = await db
     .prepare(
-      `INSERT INTO admin_users (name, email, password_hash, role) VALUES (?, ?, ?, ?)`
+      `INSERT INTO admin_users (name, email, password_hash, role, must_change_password) VALUES (?, ?, ?, ?, ?)`
     )
-    .bind(input.name, input.email.trim().toLowerCase(), input.passwordHash, input.role)
+    .bind(
+      input.name,
+      input.email.trim().toLowerCase(),
+      input.passwordHash,
+      input.role,
+      input.mustChangePassword ? 1 : 0
+    )
     .run();
   return Number(result.meta.last_row_id);
+}
+
+/** Troca a senha e sempre limpa o sinalizador — a pessoa acabou de definir uma senha própria. */
+export async function updateAdminUserPassword(id: number, passwordHash: string): Promise<void> {
+  const db = await getDB();
+  await db
+    .prepare(
+      `UPDATE admin_users SET password_hash = ?, must_change_password = 0, updated_at = datetime('now') WHERE id = ?`
+    )
+    .bind(passwordHash, id)
+    .run();
 }
 
 export async function updateAdminUserStatus(id: number, status: AdminStatus): Promise<void> {

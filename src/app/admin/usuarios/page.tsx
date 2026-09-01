@@ -9,8 +9,18 @@ interface AdminUserListItem {
   email: string;
   role: "superadmin" | "admin";
   status: "active" | "inactive";
+  must_change_password: number;
   created_at: string;
   last_login_at: string | null;
+}
+
+// Exclui caracteres ambíguos na leitura (0/O, 1/l/I) — a senha costuma ser lida em voz
+// alta ou digitada de outra tela pra combinar com a pessoa.
+const PASSWORD_CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*";
+
+function generateRandomPassword(length = 14): string {
+  const values = crypto.getRandomValues(new Uint32Array(length));
+  return Array.from(values, (v) => PASSWORD_CHARSET[v % PASSWORD_CHARSET.length]).join("");
 }
 
 export default function AdminUsersPage() {
@@ -21,9 +31,27 @@ export default function AdminUsersPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [forceChange, setForceChange] = useState(true);
+  const [copied, setCopied] = useState(false);
   const [role, setRole] = useState<"admin" | "superadmin">("admin");
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  function handleGeneratePassword() {
+    setPassword(generateRandomPassword());
+    setPasswordVisible(true);
+    setCopied(false);
+  }
+
+  async function handleCopyPassword() {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+    } catch {
+      // clipboard indisponível (ex.: contexto não seguro) — a pessoa copia manualmente
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,7 +82,7 @@ export default function AdminUsersPage() {
     const res = await fetch("/api/admin/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }),
+      body: JSON.stringify({ name, email, password, role, mustChangePassword: forceChange }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -65,6 +93,9 @@ export default function AdminUsersPage() {
     setName("");
     setEmail("");
     setPassword("");
+    setPasswordVisible(false);
+    setForceChange(true);
+    setCopied(false);
     setRole("admin");
     setFormOpen(false);
     load();
@@ -139,16 +170,58 @@ export default function AdminUsersPage() {
             <label className={labelClass} htmlFor="u-password">
               Senha (mínimo 10 caracteres)
             </label>
+            <div className="flex gap-2">
+              <input
+                id="u-password"
+                type={passwordVisible ? "text" : "password"}
+                required
+                minLength={10}
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setCopied(false);
+                }}
+                className={inputClass}
+              />
+              <button
+                type="button"
+                onClick={handleGeneratePassword}
+                className="shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Gerar aleatória
+              </button>
+            </div>
+            {password && (
+              <div className="mt-1 flex items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  className="text-slate-500 underline decoration-slate-300 hover:text-slate-700"
+                >
+                  {passwordVisible ? "Ocultar" : "Mostrar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  className="text-slate-500 underline decoration-slate-300 hover:text-slate-700"
+                >
+                  {copied ? "Copiado!" : "Copiar"}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 sm:col-span-2">
             <input
-              id="u-password"
-              type="password"
-              required
-              minLength={10}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputClass}
+              id="u-force-change"
+              type="checkbox"
+              checked={forceChange}
+              onChange={(e) => setForceChange(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-gold focus:ring-gold/40"
             />
+            <label htmlFor="u-force-change" className="text-sm text-slate-600">
+              Forçar troca de senha no primeiro login (recomendado pra senha temporária)
+            </label>
           </div>
           <div>
             <label className={labelClass} htmlFor="u-role">
@@ -171,8 +244,8 @@ export default function AdminUsersPage() {
           )}
           <p className="text-xs text-slate-400 sm:col-span-2">
             Combine a senha com a pessoa por um canal seguro (nunca por e-mail em texto simples,
-            nunca aqui no chat/README). Ela pode ser trocada depois, se vocês decidirem implementar
-            um fluxo de troca de senha própria.
+            nunca aqui no chat/README). Com "forçar troca" marcado, essa senha só serve pra ela
+            entrar uma vez — no primeiro login, o painel já pede uma senha nova e só dela.
           </p>
           <div className="sm:col-span-2">
             <button
@@ -205,13 +278,20 @@ export default function AdminUsersPage() {
                 <td className="whitespace-nowrap px-4 py-3">{u.email}</td>
                 <td className="whitespace-nowrap px-4 py-3 capitalize">{u.role}</td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      u.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {u.status === "active" ? "Ativo" : "Inativo"}
-                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        u.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {u.status === "active" ? "Ativo" : "Inativo"}
+                    </span>
+                    {Boolean(u.must_change_password) && (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">
+                        Senha temporária
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-slate-500">
                   {u.last_login_at ? new Date(u.last_login_at + "Z").toLocaleString("pt-BR") : "Nunca"}

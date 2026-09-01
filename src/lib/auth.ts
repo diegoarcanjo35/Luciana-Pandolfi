@@ -7,6 +7,7 @@ import {
   sha256Hex,
   timingSafeEqualString,
 } from "@/lib/crypto";
+import { isPasswordStrongEnough } from "@/lib/password-policy";
 import { isDbSessionValid, isLegacyAdminEnabled } from "@/lib/session-logic";
 import {
   getAdminUserByEmail,
@@ -16,6 +17,7 @@ import {
   touchAdminSessionByTokenHash,
   revokeAdminSessionByTokenHash,
   touchAdminUserLogin,
+  updateAdminUserPassword,
   isLoginLocked,
   registerFailedLoginAttempt,
   resetLoginAttempts,
@@ -58,6 +60,7 @@ export interface AdminSessionInfo {
   userId: number | null;
   name: string | null;
   isLegacy: boolean;
+  mustChangePassword: boolean;
 }
 
 const UNAUTHENTICATED: AdminSessionInfo = {
@@ -66,6 +69,7 @@ const UNAUTHENTICATED: AdminSessionInfo = {
   userId: null,
   name: null,
   isLegacy: false,
+  mustChangePassword: false,
 };
 
 export async function getSession(): Promise<AdminSessionInfo> {
@@ -88,6 +92,7 @@ export async function getSession(): Promise<AdminSessionInfo> {
         userId: user!.id,
         name: user!.name,
         isLegacy: false,
+        mustChangePassword: Boolean(user!.must_change_password),
       };
     }
   } catch {
@@ -105,6 +110,7 @@ export async function getSession(): Promise<AdminSessionInfo> {
           userId: null,
           name: "Diego (acesso legado)",
           isLegacy: true,
+          mustChangePassword: false,
         };
       }
     } catch {
@@ -185,6 +191,36 @@ export async function createRealSessionCookie(userId: number) {
     path: "/",
     maxAge: SESSION_TTL_HOURS * 60 * 60,
   });
+}
+
+// -----------------------------------------------------------------------------
+// Troca de senha própria (fluxo obrigatório quando must_change_password = 1, mas
+// disponível pra qualquer conta real a qualquer momento).
+// -----------------------------------------------------------------------------
+
+export type ChangePasswordResult =
+  | { ok: true }
+  | { ok: false; error: "current_password_invalid" | "new_password_weak" };
+
+export async function changeOwnPassword(
+  userId: number,
+  currentPassword: string,
+  newPassword: string
+): Promise<ChangePasswordResult> {
+  if (!isPasswordStrongEnough(newPassword)) {
+    return { ok: false, error: "new_password_weak" };
+  }
+  const user = await getAdminUserById(userId);
+  if (!user || user.status !== "active") {
+    return { ok: false, error: "current_password_invalid" };
+  }
+  const valid = await verifyPasswordHash(currentPassword, user.password_hash);
+  if (!valid) {
+    return { ok: false, error: "current_password_invalid" };
+  }
+  const newHash = await hashPassword(newPassword);
+  await updateAdminUserPassword(userId, newHash);
+  return { ok: true };
 }
 
 // -----------------------------------------------------------------------------

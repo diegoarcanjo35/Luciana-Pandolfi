@@ -6,6 +6,7 @@ export interface AdminSession {
   role: "superadmin" | "admin";
   name: string;
   isLegacy: boolean;
+  mustChangePassword: boolean;
 }
 
 export const AdminSessionContext = createContext<AdminSession | null>(null);
