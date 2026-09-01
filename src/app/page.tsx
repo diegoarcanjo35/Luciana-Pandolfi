@@ -113,7 +113,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
               <div className="relative flex-1">
                 <Image
                   src="/team/luciana-e-jhonatan.jpg"
-                  alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria"
+                  alt="Luciana Pandolfi e Jonathan, sócios da L&J Consultoria"
                   fill
                   sizes="(min-width: 640px) 55vw, 100vw"
                   className="object-cover object-top"
@@ -134,7 +134,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
                 </span>
                 <span className="h-3 w-px bg-gold/40" aria-hidden />
                 <span className="text-xs font-medium uppercase tracking-wide text-cream/80">
-                  Luciana Pandolfi &amp; Jhonatan — sócios da consultoria
+                  Luciana Pandolfi &amp; Jonathan — sócios da consultoria
                 </span>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
               L&amp;J
             </span>
             <blockquote className="headline-editorial text-xl text-navy sm:text-2xl">
-              Quem atende é quem assina o nome — Luciana Pandolfi &amp; Jhonatan.
+              Quem atende é quem assina o nome — Luciana Pandolfi &amp; Jonathan.
             </blockquote>
             <div className="gold-rule-center" />
             <p className="max-w-md text-sm leading-relaxed text-navy/60">

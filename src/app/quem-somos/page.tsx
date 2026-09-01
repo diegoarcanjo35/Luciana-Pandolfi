@@ -11,13 +11,13 @@ const PAGE_URL = `${SITE_URL}/quem-somos`;
 export const metadata: Metadata = {
   title: "Quem somos",
   description:
-    "L&J Consultoria — Luciana Pandolfi e Jhonatan, consultoria gratuita e independente em planos de saúde em São Paulo.",
+    "L&J Consultoria — Luciana Pandolfi e Jonathan, consultoria gratuita e independente em planos de saúde em São Paulo.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     url: PAGE_URL,
     title: "Quem somos | L&J Consultoria",
     description:
-      "Luciana Pandolfi e Jhonatan, consultoria gratuita e independente em planos de saúde em São Paulo.",
+      "Luciana Pandolfi e Jonathan, consultoria gratuita e independente em planos de saúde em São Paulo.",
     images: [{ url: "/og/lj.jpg", width: 1200, height: 630 }],
   },
 };
@@ -43,13 +43,13 @@ export default function QuemSomosPage() {
                 decidir com informação, não com achismo.&rdquo;
               </blockquote>
               <p className="max-w-md text-sm text-cream/50">
-                Luciana Pandolfi &amp; Jhonatan — sócios da L&amp;J Consultoria
+                Luciana Pandolfi &amp; Jonathan — sócios da L&amp;J Consultoria
               </p>
             </div>
             <div className="relative min-h-[20rem] sm:min-h-0">
               <Image
                 src="/team/luciana-e-jhonatan.jpg"
-                alt="Luciana Pandolfi e Jhonatan, sócios da L&J Consultoria, no escritório"
+                alt="Luciana Pandolfi e Jonathan, sócios da L&J Consultoria, no escritório"
                 fill
                 sizes="(min-width: 640px) 45vw, 100vw"
                 className="object-cover object-top"
@@ -73,7 +73,7 @@ export default function QuemSomosPage() {
             <p className="mt-5 text-base leading-relaxed text-navy/65">
               A maioria das pessoas e empresas contrata plano de saúde sem comparar de verdade — e
               só descobre o que ficou de fora do contrato quando precisa usar. Somos uma
-              consultoria gratuita e independente, formada por Luciana Pandolfi e Jhonatan. Nosso
+              consultoria gratuita e independente, formada por Luciana Pandolfi e Jonathan. Nosso
               diferencial é o acesso direto às principais operadoras e à rede de hospitais de
               referência de São Paulo — é esse acesso que guia cada análise antes de qualquer
               recomendação.
@@ -87,7 +87,7 @@ export default function QuemSomosPage() {
                 </p>
               </div>
               <div className="bg-cream/60 p-6">
-                <p className="font-serif-display text-lg text-navy">Jhonatan</p>
+                <p className="font-serif-display text-lg text-navy">Jonathan</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-navy/60">
                   Sócio da L&amp;J, responsável pela estrutura da consultoria e pelo relacionamento
                   com as operadoras parceiras.
