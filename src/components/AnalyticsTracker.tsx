@@ -46,6 +46,11 @@ declare global {
 
 function track(tipo: string, detalhes?: TrackDetails) {
   try {
+    // Painel administrativo é uso interno da equipe, não jornada de visitante — nunca
+    // deve entrar no funil de marketing (senão a navegação de quem trabalha no /admin
+    // conta como "sessão" no relatório).
+    if (window.location.pathname.startsWith("/admin")) return;
+
     const corpo = JSON.stringify({
       evento: tipo,
       sessao: sessaoId(),
