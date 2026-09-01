@@ -26,13 +26,33 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       setSession(null);
       return;
     }
-    const data = (await res.json()) as { role: AdminSession["role"]; name: string; isLegacy: boolean };
-    setSession({ role: data.role, name: data.name, isLegacy: data.isLegacy });
+    const data = (await res.json()) as {
+      role: AdminSession["role"];
+      name: string;
+      isLegacy: boolean;
+      mustChangePassword: boolean;
+    };
+    setSession({
+      role: data.role,
+      name: data.name,
+      isLegacy: data.isLegacy,
+      mustChangePassword: data.mustChangePassword,
+    });
   }, []);
 
   useEffect(() => {
     loadSession();
   }, [loadSession]);
+
+  const CHANGE_PASSWORD_PATH = "/admin/trocar-senha";
+  const mustRedirectToChangePassword =
+    !!session && session.mustChangePassword && pathname !== CHANGE_PASSWORD_PATH;
+
+  useEffect(() => {
+    if (mustRedirectToChangePassword) {
+      router.replace(CHANGE_PASSWORD_PATH);
+    }
+  }, [mustRedirectToChangePassword, router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -118,6 +138,10 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         </form>
       </div>
     );
+  }
+
+  if (mustRedirectToChangePassword) {
+    return <div className="p-8 text-center text-slate-500">Redirecionando...</div>;
   }
 
   return (

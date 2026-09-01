@@ -11,5 +11,6 @@ export async function GET() {
     role: session.role,
     name: session.name,
     isLegacy: session.isLegacy,
+    mustChangePassword: session.mustChangePassword,
   });
 }
