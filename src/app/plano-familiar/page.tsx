@@ -90,6 +90,7 @@ export default function PlanoFamiliarPage() {
               </p>
               <a
                 href="#analise"
+                data-cta="hero-analise-medsenior"
                 className="mt-7 inline-block rounded-full bg-medsenior px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-medsenior-deep"
               >
                 Quero minha análise gratuita
@@ -247,6 +248,7 @@ export default function PlanoFamiliarPage() {
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#analise"
+              data-cta="final-analise-medsenior"
               className="rounded-full bg-medsenior px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-medsenior-deep"
             >
               Solicitar análise gratuita
@@ -255,6 +257,7 @@ export default function PlanoFamiliarPage() {
               href={whatsappLink(WHATSAPP_MESSAGES.familiar)}
               target="_blank"
               rel="noopener noreferrer"
+              data-cta="final-whatsapp-medsenior"
               className="text-sm font-semibold text-navy/60 underline decoration-navy/20 hover:text-navy"
             >
               ou chame no WhatsApp

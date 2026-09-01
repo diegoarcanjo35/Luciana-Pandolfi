@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone-mask";
 import { getStoredUtm } from "@/lib/utm";
+import { track } from "@/components/AnalyticsTracker";
 
 const PARA_QUEM_OPTIONS = ["Para mim", "Minha família", "Minha empresa (CNPJ)", "Meus pais"];
 const QUANTIDADE_OPTIONS = ["1", "2 a 3", "4 a 9", "10 ou mais"];
@@ -38,6 +39,13 @@ export default function LeadFormQualificacao({
   const [numeroVidas, setNumeroVidas] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
+
+  function handleFocus() {
+    if (started.current) return;
+    started.current = true;
+    track("form_start", { elemento: sourcePage, oferta: campaign });
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -85,6 +93,7 @@ export default function LeadFormQualificacao({
 
       if (!res.ok) throw new Error("Falha no envio");
 
+      track("form_submit", { elemento: sourcePage, oferta: campaign });
       const params = new URLSearchParams({ origem: "qualificacao", eid: eventId });
       if (campaign) params.set("campanha", campaign);
       router.push(`/obrigado?${params.toString()}`);
@@ -101,7 +110,7 @@ export default function LeadFormQualificacao({
   const labelClass = "text-sm font-medium text-navy/80";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} onFocus={handleFocus} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label htmlFor="q-nome" className={labelClass}>
           Nome completo

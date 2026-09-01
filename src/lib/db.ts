@@ -512,3 +512,106 @@ export async function listPromotionAudit(promotionId: number): Promise<Promotion
     .all<PromotionAuditRow>();
   return results;
 }
+
+// ---------------------------------------------------------------------------
+// Analytics de sessão pseudônima
+// ---------------------------------------------------------------------------
+
+export interface AnalyticsEventInput {
+  criadoEm: string;
+  sessaoId: string;
+  tipoEvento: string;
+  pagina: string;
+  elemento: string | null;
+  oferta: string | null;
+  etapa: number | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  utmTerm: string | null;
+  referrer: string | null;
+  landingPage: string | null;
+}
+
+export async function insertAnalyticsEvent(input: AnalyticsEventInput): Promise<void> {
+  const db = await getDB();
+  await db
+    .prepare(
+      `INSERT INTO analytics_events (
+        criado_em, sessao_id, tipo_evento, pagina, elemento, oferta, etapa,
+        utm_source, utm_medium, utm_campaign, utm_content, utm_term,
+        referrer, landing_page
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      input.criadoEm,
+      input.sessaoId,
+      input.tipoEvento,
+      input.pagina,
+      input.elemento,
+      input.oferta,
+      input.etapa,
+      input.utmSource,
+      input.utmMedium,
+      input.utmCampaign,
+      input.utmContent,
+      input.utmTerm,
+      input.referrer,
+      input.landingPage
+    )
+    .run();
+}
+
+export interface FunilRow {
+  pagina: string;
+  tipo_evento: string;
+  n: number;
+}
+
+export async function queryFunil(sinceIso: string): Promise<FunilRow[]> {
+  const db = await getDB();
+  const { results } = await db
+    .prepare(
+      `SELECT pagina, tipo_evento, COUNT(DISTINCT sessao_id) AS n
+       FROM analytics_events
+       WHERE criado_em >= ?
+       GROUP BY pagina, tipo_evento`
+    )
+    .bind(sinceIso)
+    .all<FunilRow>();
+  return results;
+}
+
+export async function querySessoesTotais(sinceIso: string): Promise<number> {
+  const db = await getDB();
+  const row = await db
+    .prepare(
+      `SELECT COUNT(DISTINCT sessao_id) AS sessoes
+       FROM analytics_events
+       WHERE tipo_evento = 'page_view' AND criado_em >= ?`
+    )
+    .bind(sinceIso)
+    .first<{ sessoes: number }>();
+  return row?.sessoes ?? 0;
+}
+
+export interface CampanhaRow {
+  utm_campaign: string | null;
+  n: number;
+}
+
+export async function queryPorCampanha(sinceIso: string): Promise<CampanhaRow[]> {
+  const db = await getDB();
+  const { results } = await db
+    .prepare(
+      `SELECT utm_campaign, COUNT(DISTINCT sessao_id) AS n
+       FROM analytics_events
+       WHERE tipo_evento = 'page_view' AND criado_em >= ?
+       GROUP BY utm_campaign
+       ORDER BY n DESC`
+    )
+    .bind(sinceIso)
+    .all<CampanhaRow>();
+  return results;
+}

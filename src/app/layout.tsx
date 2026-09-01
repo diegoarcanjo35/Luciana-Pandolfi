@@ -4,6 +4,7 @@ import "./globals.css";
 import UtmCapture from "@/components/UtmCapture";
 import CookieConsent from "@/components/CookieConsent";
 import MetaPixelBase from "@/components/MetaPixelBase";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 
 const inter = Inter({
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <MetaPixelBase />
         <UtmCapture />
+        <AnalyticsTracker />
         {children}
         <CookieConsent />
       </body>

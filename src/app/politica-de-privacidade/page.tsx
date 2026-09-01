@@ -103,6 +103,20 @@ export default function PoliticaDePrivacidadePage() {
             </section>
 
             <section>
+              <h2 className="font-semibold text-navy">Analytics interno (sessão anônima)</h2>
+              <p className="mt-2">
+                Também usamos um sistema próprio de medição de navegação, sem depender de serviços de
+                terceiros como Google Analytics. Ele associa sua navegação a um identificador aleatório
+                gerado no seu navegador, que existe apenas enquanto a aba estiver aberta (armazenado em{" "}
+                <code>sessionStorage</code>) e é apagado ao fechá-la — não é um cookie de rastreamento
+                entre sites, não identifica você pessoalmente, e não é cruzado com seus dados de contato.
+                Esse identificador serve só para entendermos, de forma agregada, em qual etapa da
+                navegação (visita, rolagem, clique, formulário) as pessoas costumam desistir, para
+                melhorarmos o site.
+              </p>
+            </section>
+
+            <section>
               <h2 className="font-semibold text-navy">Seus direitos</h2>
               <p className="mt-2">
                 Você pode solicitar a qualquer momento a confirmação, o acesso, a correção ou a exclusão

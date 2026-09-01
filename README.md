@@ -880,6 +880,41 @@ no ar** — todo canonical, Open Graph e o `sitemap.xml` (`src/app/sitemap.ts`) 
   mesmo `SITE_URL` que alimenta `sitemap.ts` e o `openGraph` de cada página — um único ponto de
   atualização quando o domínio definitivo entrar no ar.
 
+## Analytics de sessão pseudônima (branch `analytics-sessao-pseudonima`, 01/09/2026)
+
+Sistema de analytics próprio, sem GA4 e sem cookie de rastreio entre sites — adaptado do guia
+extraído da implementação em produção no site da Vallery Alves. Complementa (não substitui) o Meta
+Pixel/CAPI: aquele mede resultado de anúncio pra otimização da Meta, este dá um funil interno ligado
+às suas próprias páginas.
+
+- **Banco:** tabela única `analytics_events` (`migrations/0004_analytics_events.sql`), aditiva.
+- **Segurança do endpoint** (`src/lib/analytics-security.ts`, testado em
+  `src/lib/__tests__/analytics-security.test.ts`): lista fechada de tipos de evento, limite de
+  tamanho de corpo, rate limit em memória por IP (120 eventos/min — por isolate do Worker, não
+  global, ver limitação abaixo).
+- **Endpoint:** `POST /api/evento` (`src/app/api/evento/route.ts`) — nunca responde erro visível
+  nem trava a navegação; qualquer falha (banco fora do ar, campo estranho) é engolida e sempre
+  retorna 204.
+- **Rastreador no front:** `src/components/AnalyticsTracker.tsx`, montado no `layout.tsx` raiz.
+  Diferente do guia original (site multi-page, script solto), aqui é um client component que usa
+  `usePathname` pra disparar `page_view` a cada troca de rota do Next.js (navegação client-side, sem
+  reload). Sessão pseudônima em `sessionStorage` (expira com a aba), `IntersectionObserver` pra
+  `section_view` automático em qualquer `<section id="...">`, e `cta_click` em qualquer elemento
+  marcado com `data-cta="rotulo"`.
+- **Vocabulário de eventos:** `page_view`, `section_view`, `cta_click`, `whatsapp_click` (via
+  `data-cta="whatsapp-flutuante"` no `WhatsAppButton`), `form_start` (primeiro foco no formulário) e
+  `form_submit` (após `POST /api/lead` responder OK) — instrumentado em `LeadFormIsca` e
+  `LeadFormQualificacao`.
+- **Painel:** `/admin/analytics` — funil por página (pivotado com `src/lib/analytics-funil.ts`,
+  testado) e visitas por campanha UTM, ambos vindos de `GET /api/admin/analytics`.
+- **Privacidade:** parágrafo próprio adicionado em `/politica-de-privacidade` explicando o
+  identificador de sessão. A leitura técnica usada foi que sessão pseudônima + expira com a aba +
+  nenhum identificador cruzável não caracteriza dado pessoal — não é parecer jurídico, só a decisão
+  documentada do projeto.
+- **Limitação conhecida:** o rate limit é por isolate do Worker, não compartilhado globalmente —
+  segura abuso trivial de um único IP, não um ataque distribuído sério (precisaria de KV/Redis
+  compartilhado pra isso).
+
 ## Captura de UTM
 
 UTMs (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`) são capturados da URL no
