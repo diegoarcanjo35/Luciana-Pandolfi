@@ -18,11 +18,15 @@ export default async function ObrigadoPage({
   const params = await searchParams;
   const campanha = typeof params.campanha === "string" ? params.campanha : null;
   const eventId = typeof params.eid === "string" ? params.eid : null;
+  const origem = typeof params.origem === "string" ? params.origem : null;
+  // Mesma regra do backend (src/app/api/lead/route.ts): "Lead" só pra análise
+  // completa, "CompleteRegistration" pro guia gratuito.
+  const eventName = origem === "qualificacao" ? "Lead" : "CompleteRegistration";
 
   return (
     <>
       <Header ctaHref="/" />
-      <ConversionTracking campaign={campanha} eventId={eventId} />
+      <ConversionTracking campaign={campanha} eventId={eventId} eventName={eventName} />
       <main className="flex flex-1 items-center justify-center px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-xl text-center">
           <div

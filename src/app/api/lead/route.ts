@@ -62,8 +62,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (eventId) {
+    // "Lead" fica reservado ao formulário de análise completa (a campanha otimiza em
+    // cima dele); o guia gratuito usa "CompleteRegistration" pra não misturar sinal
+    // de intenção alta com quem só queria o material — ver auditoria de campanha.
+    const eventName = formType === "qualificacao" ? "Lead" : "CompleteRegistration";
     const capiCall = sendLeadEventServerSide({
       eventId,
+      eventName,
       eventSourceUrl: req.headers.get("referer") ?? `https://lucianapandolfi.com.br/${sourcePage}`,
       nome,
       whatsapp,
