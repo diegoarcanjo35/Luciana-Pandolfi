@@ -76,6 +76,26 @@ export async function listLeads(): Promise<LeadRow[]> {
   return results;
 }
 
+export const LEAD_STATUS_VALUES = [
+  "novo",
+  "em_contato",
+  "qualificado",
+  "convertido",
+  "perdido",
+] as const;
+
+export type LeadStatus = (typeof LEAD_STATUS_VALUES)[number];
+
+export async function updateLeadStatus(id: number, status: LeadStatus): Promise<void> {
+  const db = await getDB();
+  await db.prepare(`UPDATE leads SET status = ? WHERE id = ?`).bind(status, id).run();
+}
+
+export async function deleteLead(id: number): Promise<void> {
+  const db = await getDB();
+  await db.prepare(`DELETE FROM leads WHERE id = ?`).bind(id).run();
+}
+
 // ---------------------------------------------------------------------------
 // Contas administrativas
 // ---------------------------------------------------------------------------
