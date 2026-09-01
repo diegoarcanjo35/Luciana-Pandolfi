@@ -17,6 +17,7 @@ function normalizePhoneForHash(whatsapp: string): string {
 
 export interface LeadEventInput {
   eventId: string;
+  eventName: string;
   eventSourceUrl: string;
   nome: string;
   whatsapp: string;
@@ -27,7 +28,11 @@ export interface LeadEventInput {
 }
 
 /**
- * Dispara o evento "Lead" para a API de Conversões da Meta (server-side).
+ * Dispara um evento (Lead ou CompleteRegistration, conforme eventName) para a
+ * API de Conversões da Meta (server-side). "Lead" é reservado ao formulário de
+ * análise completa — a campanha otimiza em cima dele; o formulário do guia
+ * gratuito usa "CompleteRegistration" pra não diluir o sinal de intenção alta
+ * com quem só queria o material (ver auditoria de campanha, 01/09/2026).
  * Não lança erro para o chamador — falha de tracking nunca deve derrubar a
  * gravação do lead. Loga no console em caso de erro pra dar pra investigar.
  */
@@ -43,7 +48,7 @@ export async function sendLeadEventServerSide(input: LeadEventInput): Promise<vo
   }
 
   if (!token) {
-    console.log("[meta-capi:bypass] META_CAPI_TOKEN não configurado — evento Lead não enviado.");
+    console.log(`[meta-capi:bypass] META_CAPI_TOKEN não configurado — evento ${input.eventName} não enviado.`);
     return;
   }
 
@@ -55,7 +60,7 @@ export async function sendLeadEventServerSide(input: LeadEventInput): Promise<vo
   const payload = {
     data: [
       {
-        event_name: "Lead",
+        event_name: input.eventName,
         event_time: Math.floor(Date.now() / 1000),
         event_id: input.eventId,
         action_source: "website",
@@ -83,9 +88,9 @@ export async function sendLeadEventServerSide(input: LeadEventInput): Promise<vo
     );
     if (!res.ok) {
       const text = await res.text();
-      console.error("[meta-capi] Falha ao enviar evento Lead", res.status, text);
+      console.error(`[meta-capi] Falha ao enviar evento ${input.eventName}`, res.status, text);
     }
   } catch (err) {
-    console.error("[meta-capi] Erro de rede ao enviar evento Lead", err);
+    console.error(`[meta-capi] Erro de rede ao enviar evento ${input.eventName}`, err);
   }
 }
