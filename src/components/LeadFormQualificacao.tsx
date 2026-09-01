@@ -9,6 +9,7 @@ import { track } from "@/components/AnalyticsTracker";
 const PARA_QUEM_OPTIONS = ["Para mim", "Minha família", "Minha empresa (CNPJ)", "Meus pais"];
 const QUANTIDADE_OPTIONS = ["1", "2 a 3", "4 a 9", "10 ou mais"];
 const QUANDO_OPTIONS = ["O quanto antes", "Nos próximos 30 dias", "Só pesquisando"];
+const CNPJ_ATIVO_OPTIONS = ["Sim", "Ainda não", "Está em abertura"];
 
 export default function LeadFormQualificacao({
   sourcePage,
@@ -37,6 +38,7 @@ export default function LeadFormQualificacao({
   const [quando, setQuando] = useState("");
   const [hospital, setHospital] = useState("");
   const [numeroVidas, setNumeroVidas] = useState("");
+  const [cnpjAtivo, setCnpjAtivo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
@@ -58,7 +60,8 @@ export default function LeadFormQualificacao({
       !quantidade ||
       !jaTemPlano ||
       !quando ||
-      (showNumeroVidas && !numeroVidas.trim())
+      (showNumeroVidas && !numeroVidas.trim()) ||
+      (showNumeroVidas && !cnpjAtivo)
     ) {
       setError("Preencha os campos obrigatórios antes de enviar.");
       return;
@@ -85,6 +88,7 @@ export default function LeadFormQualificacao({
           quando_resolver: quando,
           hospital_especifico: hospital || null,
           numero_vidas: showNumeroVidas ? numeroVidas : null,
+          cnpj_ativo: showNumeroVidas ? cnpjAtivo : null,
           event_id: eventId,
           promotion_slug: promotionSlug ?? null,
           ...utm,
@@ -192,6 +196,30 @@ export default function LeadFormQualificacao({
             placeholder="Ex: 8"
             className={inputClass}
           />
+        </div>
+      )}
+
+      {showNumeroVidas && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="q-cnpj-ativo" className={labelClass}>
+            Você possui CNPJ ou MEI ativo?
+          </label>
+          <select
+            id="q-cnpj-ativo"
+            required
+            value={cnpjAtivo}
+            onChange={(e) => setCnpjAtivo(e.target.value)}
+            className={selectClass}
+          >
+            <option value="" disabled>
+              Selecione
+            </option>
+            {CNPJ_ATIVO_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

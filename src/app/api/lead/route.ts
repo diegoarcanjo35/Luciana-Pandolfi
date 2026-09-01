@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       quando_resolver: str(body.quando_resolver),
       hospital_especifico: str(body.hospital_especifico),
       numero_vidas: str(body.numero_vidas),
+      cnpj_ativo: str(body.cnpj_ativo),
       utm_source: str(body.utm_source),
       utm_medium: str(body.utm_medium),
       utm_campaign: str(body.utm_campaign),
