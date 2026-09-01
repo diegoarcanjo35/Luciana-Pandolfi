@@ -13,6 +13,7 @@ export interface LeadInput {
   quando_resolver?: string | null;
   hospital_especifico?: string | null;
   numero_vidas?: string | null;
+  cnpj_ativo?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
@@ -33,9 +34,9 @@ export async function insertLead(lead: LeadInput) {
       `INSERT INTO leads (
         form_type, source_page, campaign, nome, whatsapp, email,
         para_quem, quantidade_pessoas, ja_tem_plano, quando_resolver,
-        hospital_especifico, numero_vidas,
+        hospital_especifico, numero_vidas, cnpj_ativo,
         utm_source, utm_medium, utm_campaign, utm_content, utm_term, promotion_slug
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       lead.form_type,
@@ -50,6 +51,7 @@ export async function insertLead(lead: LeadInput) {
       lead.quando_resolver ?? null,
       lead.hospital_especifico ?? null,
       lead.numero_vidas ?? null,
+      lead.cnpj_ativo ?? null,
       lead.utm_source ?? null,
       lead.utm_medium ?? null,
       lead.utm_campaign ?? null,

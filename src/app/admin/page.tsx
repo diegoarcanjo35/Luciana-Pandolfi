@@ -51,6 +51,7 @@ export default function AdminLeadsPage() {
               <th className="px-4 py-3">É para</th>
               <th className="px-4 py-3">Qtd. pessoas</th>
               <th className="px-4 py-3">Nº vidas</th>
+              <th className="px-4 py-3">CNPJ/MEI ativo</th>
               <th className="px-4 py-3">Já tem plano</th>
               <th className="px-4 py-3">Quando resolver</th>
               <th className="px-4 py-3">Hospital</th>
@@ -76,6 +77,7 @@ export default function AdminLeadsPage() {
                 <td className="whitespace-nowrap px-4 py-3">{lead.para_quem ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.quantidade_pessoas ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.numero_vidas ?? "—"}</td>
+                <td className="whitespace-nowrap px-4 py-3">{lead.cnpj_ativo ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.ja_tem_plano ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.quando_resolver ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.hospital_especifico ?? "—"}</td>
@@ -87,7 +89,7 @@ export default function AdminLeadsPage() {
             ))}
             {!loadingLeads && leads.length === 0 && (
               <tr>
-                <td colSpan={18} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={19} className="px-4 py-10 text-center text-slate-400">
                   Nenhum lead recebido ainda.
                 </td>
               </tr>
