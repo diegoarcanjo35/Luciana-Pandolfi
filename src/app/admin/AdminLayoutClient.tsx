@@ -8,6 +8,7 @@ import { AdminSessionContext, type AdminSession } from "@/components/admin/Admin
 const NAV_ITEMS = [
   { href: "/admin", label: "Leads" },
   { href: "/admin/promocoes", label: "Promoções" },
+  { href: "/admin/analytics", label: "Analytics" },
 ];
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {

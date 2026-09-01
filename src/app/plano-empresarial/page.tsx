@@ -76,6 +76,7 @@ export default function PlanoEmpresarialPage() {
               </p>
               <a
                 href="#analise"
+                data-cta="hero-analise-alice"
                 className="mt-1 inline-block w-fit rounded-full bg-alice px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-alice-deep"
               >
                 Quero minha análise empresarial
@@ -247,6 +248,7 @@ export default function PlanoEmpresarialPage() {
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#analise"
+              data-cta="final-analise-alice"
               className="rounded-full bg-alice px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-alice-deep"
             >
               Solicitar análise empresarial
@@ -255,6 +257,7 @@ export default function PlanoEmpresarialPage() {
               href={whatsappLink(WHATSAPP_MESSAGES.empresarial)}
               target="_blank"
               rel="noopener noreferrer"
+              data-cta="final-whatsapp-alice"
               className="text-sm font-semibold text-navy/60 underline decoration-navy/20 hover:text-navy"
             >
               ou chame no WhatsApp

@@ -92,6 +92,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
                   href="#simulacao"
+                  data-cta="hero-analise-gratuita"
                   className="inline-block rounded-full bg-gold px-7 py-3.5 text-center text-base font-semibold text-navy transition-colors hover:bg-gold-light"
                 >
                   Quero minha análise gratuita

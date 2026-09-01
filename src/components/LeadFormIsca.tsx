@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone-mask";
 import { getStoredUtm } from "@/lib/utm";
+import { track } from "@/components/AnalyticsTracker";
 
 export default function LeadFormIsca({
   sourcePage,
@@ -19,6 +20,13 @@ export default function LeadFormIsca({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
+
+  function handleFocus() {
+    if (started.current) return;
+    started.current = true;
+    track("form_start", { elemento: sourcePage, oferta: campaign });
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -51,6 +59,7 @@ export default function LeadFormIsca({
 
       if (!res.ok) throw new Error("Falha no envio");
 
+      track("form_submit", { elemento: sourcePage, oferta: campaign });
       const params = new URLSearchParams({ origem: "guia", eid: eventId });
       if (campaign) params.set("campanha", campaign);
       router.push(`/obrigado?${params.toString()}`);
@@ -61,7 +70,7 @@ export default function LeadFormIsca({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} onFocus={handleFocus} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <label htmlFor="isca-nome" className="text-sm font-medium text-navy/80">
           Nome
