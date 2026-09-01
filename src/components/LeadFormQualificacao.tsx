@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone-mask";
 import { getStoredUtm } from "@/lib/utm";
 import { track } from "@/components/AnalyticsTracker";
+import { whatsappLink } from "@/lib/site-config";
 
 const PARA_QUEM_OPTIONS = ["Para mim", "Minha família", "Minha empresa (CNPJ)", "Meus pais"];
 const QUANTIDADE_OPTIONS = ["1", "2 a 3", "4 a 9", "10 ou mais"];
@@ -71,6 +72,11 @@ export default function LeadFormQualificacao({
     const utm = getStoredUtm();
     const eventId = crypto.randomUUID();
 
+    // Precisa abrir a aba em branco AGORA, ainda dentro do gesto de clique do
+    // usuário — se abrir só depois do fetch, o navegador trata como pop-up
+    // não solicitado e bloqueia (confirmado em teste local).
+    const whatsappTab = window.open("", "_blank", "noopener,noreferrer");
+
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -98,10 +104,30 @@ export default function LeadFormQualificacao({
       if (!res.ok) throw new Error("Falha no envio");
 
       track("form_submit", { elemento: sourcePage, oferta: campaign });
+
+      // Preenche a aba já aberta acima com os dados do formulário — além de já
+      // ter salvo o lead na tabela. As duas coisas, não uma ou outra.
+      const linhas = [
+        "Olá! Acabei de solicitar minha análise gratuita pelo site.",
+        "",
+        `Nome: ${nome}`,
+        `É para: ${paraQuem}`,
+        `Quantas pessoas: ${quantidade}`,
+        `Já tem plano: ${jaTemPlano}`,
+        `Quando pretende resolver: ${quando}`,
+      ];
+      if (hospital.trim()) linhas.push(`Hospital de interesse: ${hospital}`);
+      if (showNumeroVidas && numeroVidas.trim()) linhas.push(`Número de vidas: ${numeroVidas}`);
+      if (showNumeroVidas && cnpjAtivo) linhas.push(`CNPJ/MEI ativo: ${cnpjAtivo}`);
+      if (whatsappTab) {
+        whatsappTab.location.href = whatsappLink(linhas.join("\n"));
+      }
+
       const params = new URLSearchParams({ origem: "qualificacao", eid: eventId });
       if (campaign) params.set("campanha", campaign);
       router.push(`/obrigado?${params.toString()}`);
     } catch {
+      whatsappTab?.close();
       setError("Não conseguimos enviar agora. Tente novamente em instantes.");
       setLoading(false);
     }
