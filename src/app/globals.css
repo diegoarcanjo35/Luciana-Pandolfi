@@ -11,8 +11,10 @@
    Sistema institucional L&J + assinaturas contextuais por campanha:
    - MedSênior: verde profundo (não o verde vibrante do ad, um tom mais editorial/
      institucional — assinatura discreta, não repaint da página inteira).
-   - Alice: bordô, derivado da blusa vermelha da Luciana no vídeo do anúncio —
-     também abaixado pra um tom editorial, não o vermelho puro do vídeo. */
+   - Alice: a marca oficial usa magenta vibrante (confirmado via Meta Ad Library,
+     anúncios reais da Alice em 2026-09-01) — ajustado aqui pra um tom entre o bordô
+     original (da blusa da Luciana) e o magenta puro da marca: reconhecível como
+     "Alice" sem virar rosa-choque, que destoaria do resto do site. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -34,9 +36,9 @@
   --color-medsenior-tint: #eaf1ea;
 
   /* Assinatura contextual — Alice (/plano-empresarial) */
-  --color-alice: #7a2634;
-  --color-alice-deep: #551a24;
-  --color-alice-tint: #f5e9ea;
+  --color-alice: #8f2456;
+  --color-alice-deep: #641938;
+  --color-alice-tint: #f7e8ef;
 }
 
 body {

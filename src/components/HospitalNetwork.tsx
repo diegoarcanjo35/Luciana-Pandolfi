@@ -2,13 +2,17 @@
 // resumidos no README). Só nomes, sem foto/logo (nenhum asset autorizado ainda) e sem
 // prometer cobertura: a rede credenciada real depende de operadora/produto/categoria,
 // confirmada individualmente durante a análise. Ver README para a íntegra da regra.
+//
+// Lista atualizada em 2026-09-01 com os hospitais que a Luciana confirmou por áudio
+// como referência real de São Paulo (documento "Rede Medsenior Setembro 2026.pdf").
+// Substitui a lista genérica anterior (Einstein, Sírio-Libanês, D'Or, Beneficência
+// Portuguesa), que nunca foi confirmada por nenhuma operadora específica.
 const HOSPITALS = [
-  "Hospital Israelita Albert Einstein",
-  "Hospital Sírio-Libanês",
-  "Rede D'Or São Luiz",
-  "Beneficência Portuguesa de São Paulo",
+  "Hospital São Camilo",
   "Hospital Samaritano",
+  "Hospital Nove de Julho",
   "Hospital Santa Catarina",
+  "Hospital Oswaldo Cruz",
 ];
 
 export default function HospitalNetwork() {
