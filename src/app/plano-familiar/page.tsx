@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import LeadFormIsca from "@/components/LeadFormIsca";
 import LeadFormQualificacao from "@/components/LeadFormQualificacao";
+import MedSeniorNetwork from "@/components/MedSeniorNetwork";
 import { SITE_URL, WHATSAPP_MESSAGES, whatsappLink } from "@/lib/site-config";
 
 const PAGE_URL = `${SITE_URL}/plano-familiar`;
@@ -174,6 +175,8 @@ export default function PlanoFamiliarPage() {
             </div>
           </div>
         </section>
+
+        <MedSeniorNetwork />
 
         {/* A dor — versão família/indivíduo */}
         <section className="bg-white px-4 py-16 sm:px-6">
