@@ -11,7 +11,7 @@ export default function Footer({ showHomeLink = true }: { showHomeLink?: boolean
           L&J
         </span>
         <p className="font-serif-display text-base text-cream">L&amp;J Consultoria | Planos de Saúde</p>
-        <p className="text-xs text-cream/50">Luciana Pandolfi &amp; Jhonatan</p>
+        <p className="text-xs text-cream/50">Luciana Pandolfi &amp; Jonathan</p>
         <p>
           Consultoria gratuita e independente em planos de saúde · São Paulo/SP
         </p>
