@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { LeadRow } from "@/lib/db";
+import { leadWhatsappLink } from "@/lib/site-config";
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: "novo", label: "Novo" },
@@ -168,7 +169,17 @@ export default function AdminLeadsPage() {
                   {new Date(lead.created_at + "Z").toLocaleString("pt-BR")}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 font-medium text-navy">{lead.nome}</td>
-                <td className="whitespace-nowrap px-4 py-3">{lead.whatsapp}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <a
+                    href={leadWhatsappLink(lead.whatsapp, lead.nome)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-700 underline decoration-green-600/40 hover:text-green-800"
+                    title="Chamar este lead no WhatsApp"
+                  >
+                    {lead.whatsapp}
+                  </a>
+                </td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.email ?? "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3 capitalize">{lead.form_type}</td>
                 <td className="whitespace-nowrap px-4 py-3">{lead.source_page}</td>

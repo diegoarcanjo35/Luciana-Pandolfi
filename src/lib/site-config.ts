@@ -8,6 +8,15 @@ export function whatsappLink(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
+/** Link do WhatsApp DO LEAD (não o nosso) — usado no painel admin pra equipe
+ * chamar o lead direto, já com uma mensagem de abordagem padrão preenchida. */
+export function leadWhatsappLink(whatsapp: string, nome: string) {
+  const digits = whatsapp.replace(/\D/g, "");
+  const primeiroNome = nome.trim().split(/\s+/)[0] || "";
+  const mensagem = `Olá${primeiroNome ? `, ${primeiroNome}` : ""}! Aqui é da L&J Consultoria 😊 Vi que você solicitou uma análise gratuita de plano de saúde no nosso site. Posso te ajudar agora?`;
+  return `https://wa.me/55${digits}?text=${encodeURIComponent(mensagem)}`;
+}
+
 export const WHATSAPP_MESSAGES = {
   home: "Olá! Vim pelo site e quero fazer minha simulação gratuita de plano de saúde.",
   empresarial:
